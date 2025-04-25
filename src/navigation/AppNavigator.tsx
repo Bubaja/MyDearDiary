@@ -7,7 +7,7 @@ import EditEntry from '../screens/EditEntry';
 import ProfileScreen from '../screens/ProfileEditScreen';
 import CustomDrawerContent from '../components/CustomDrawerContent';
 import { RootStackParamList } from './types';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import FAQScreen from '../screens/FAQ';
@@ -16,9 +16,11 @@ import LegalScreen from '../screens/LegalScreen';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
 
+type NavigationType = NavigationProp<RootStackParamList>;
+
 // Wrapper komponenta koja proverava postojanje unosa pre renderovanja CreateEntry
 const CreateEntryWrapper = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationType>();
   const { session } = useAuth();
 
   useEffect(() => {
@@ -44,7 +46,7 @@ const CreateEntryWrapper = () => {
 
         if (data) {
           // Ako postoji današnji unos, preusmeravamo na njegovu izmenu
-          navigation.replace('EditEntry', { entry: data });
+          navigation.navigate('EditEntry', { entry: data });
         }
       } catch (error) {
         console.error('Error checking today entry:', error);

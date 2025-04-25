@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, StyleSheet, Linking } from 'react-native';
 import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
-import { Avatar, Text } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
+import { MaterialIcons } from '@expo/vector-icons';
 
 const CustomDrawerContent = (props: any) => {
   const { session, signOut } = useAuth();
@@ -21,12 +22,11 @@ const CustomDrawerContent = (props: any) => {
     <DrawerContentScrollView {...props}>
       <View style={styles.drawerContent}>
         <View style={styles.userInfoSection}>
-          <Avatar.Icon 
-            size={48} 
-            icon="account"
-            style={styles.avatar}
-            color="#fff"
-          />
+          <View style={styles.avatarContainer}>
+            <View style={styles.avatar}>
+              <MaterialIcons name="person" size={32} color="#fff" />
+            </View>
+          </View>
           <View style={styles.userInfo}>
             <Text variant="titleMedium" style={styles.userName}>
               {userName}
@@ -99,11 +99,18 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingLeft: 12,
   },
+  avatarContainer: {
+    marginRight: 12,
+  },
   avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     backgroundColor: '#6B4EFF',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   userInfo: {
-    marginLeft: 12,
     flex: 1,
   },
   userName: {
