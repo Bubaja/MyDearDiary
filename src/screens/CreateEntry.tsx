@@ -274,41 +274,63 @@ export default function CreateEntry() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <View style={styles.editorContainer}>
+<<<<<<< HEAD
             <RichEditor
               ref={richText}
               initialContentHTML={content}
             onChange={handleContentChange}
+=======
+          <RichEditor
+            ref={richText}
+            initialContentHTML={content}
+            onChange={setContent}
+>>>>>>> 746b980 (Poboljšan dizajn header-a na CreateEntry i EditEntry stranicama)
             placeholder="My Dear Diary..."
-              style={styles.editor}
+            style={styles.editor}
             initialHeight={Dimensions.get('window').height - 300}
-              editorStyle={{
-                contentCSSText: `
-                  * {
+            editorStyle={{
+              contentCSSText: `
+                * {
                   font-family: -apple-system;
-                    font-size: 16px;
+                  font-size: 16px;
                   line-height: 1.5;
                 }
                 body {
                   margin: 0;
                   padding: 0 16px;
+<<<<<<< HEAD
                   }
                   p {
                     margin: 0;
                     padding: 0;
                   }
+=======
+                }
+                p {
+                  margin: 0;
+                  padding: 0;
+                }
+>>>>>>> 746b980 (Poboljšan dizajn header-a na CreateEntry i EditEntry stranicama)
                 img {
                   max-width: 100%;
                   height: auto;
                   border-radius: 8px;
                   margin: 8px 0;
                 }
+<<<<<<< HEAD
                 `
               }}
             />
           </View>
+=======
+              `
+            }}
+          />
+        </View>
+>>>>>>> 746b980 (Poboljšan dizajn header-a na CreateEntry i EditEntry stranicama)
 
-          <RichToolbar
-            editor={richText}
+        <RichToolbar
+          editor={richText}
           actions={[
             actions.undo,
             actions.setBold,
@@ -323,8 +345,8 @@ export default function CreateEntry() {
             actions.insertImage,
           ]}
           style={styles.toolbar}
-            onPressAddImage={handleImagePick}
-          />
+          onPressAddImage={handleImagePick}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

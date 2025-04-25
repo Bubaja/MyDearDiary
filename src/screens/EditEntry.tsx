@@ -342,7 +342,11 @@ const styles = StyleSheet.create({
     shadowOffset: {
       width: 0,
       height: 2,
+<<<<<<< HEAD
   },
+=======
+    },
+>>>>>>> 746b980 (Poboljšan dizajn header-a na CreateEntry i EditEntry stranicama)
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
@@ -384,6 +388,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
+<<<<<<< HEAD
   },
   disabledButton: {
     opacity: 0.5,
@@ -391,6 +396,8 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#000',
     fontWeight: '600',
+=======
+>>>>>>> 746b980 (Poboljšan dizajn header-a na CreateEntry i EditEntry stranicama)
   },
 });
 
