@@ -1,0 +1,224 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, StyleSheet, RefreshControl, FlatList, TouchableOpacity, Alert, TouchableWithoutFeedback, Platform, SafeAreaView } from 'react-native';
+import { Text } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import DiaryCard from '../../components/DiaryCard';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
+import { RootStackParamList } from '../../navigation/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useFocusEffect, useNavigation, DrawerActions } from '@react-navigation/native';
+import { DiaryEntry } from '../../types/diary';
+import CalendarHeader from '../../components/CalendarHeader';
+import { startOfDay, endOfDay } from 'date-fns';
+
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+const HomeScreen: React.FC = () => {
+  const [entries, setEntries] = useState<DiaryEntry[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const { session, signOut } = useAuth();
+  const navigation = useNavigation<HomeScreenNavigationProp>();
+
+  const fetchEntries = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('entries')
+        .select('*')
+        .eq('user_id', session?.user?.id)
+        .gte('created_at', startOfDay(selectedDate).toISOString())
+        .lte('created_at', endOfDay(selectedDate).toISOString())
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setEntries(data || []);
+    } catch (error) {
+      console.error('Error fetching entries:', error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchEntries();
+    }, [session?.user?.id, selectedDate])
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchEntries();
+    setRefreshing(false);
+  };
+
+  const handleAddEntry = async () => {
+    try {
+      const today = new Date();
+      const startOfToday = startOfDay(today).toISOString();
+      const endOfToday = endOfDay(today).toISOString();
+
+      const { data, error } = await supabase
+        .from('entries')
+        .select('*')
+        .eq('user_id', session?.user?.id)
+        .gte('created_at', startOfToday)
+        .lte('created_at', endOfToday)
+        .single();
+
+      if (error && error.code !== 'PGRST116') { // PGRST116 znači da nije pronađen unos
+        throw error;
+      }
+
+      if (data) {
+        // Ako postoji današnji unos, idemo na edit
+        navigation.navigate('EditEntry', { entry: data });
+      } else {
+        // Ako ne postoji današnji unos, idemo na create
+    navigation.navigate('CreateEntry');
+      }
+    } catch (error) {
+      console.error('Error checking today\'s entry:', error);
+      Alert.alert('Error', 'Failed to check today\'s entry');
+    }
+  };
+
+  const handleEditEntry = (entry: DiaryEntry) => {
+    navigation.navigate('EditEntry', { entry });
+  };
+
+  const handleDeleteEntry = async (entry: DiaryEntry) => {
+    Alert.alert(
+      'Delete Entry',
+      'Are you sure you want to delete this entry?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { error } = await supabase
+                .from('entries')
+                .delete()
+                .eq('id', entry.id);
+
+              if (error) throw error;
+              fetchEntries();
+            } catch (error) {
+              console.error('Error deleting entry:', error);
+              Alert.alert('Error', 'Failed to delete entry');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          style={styles.menuButton}
+          onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
+        >
+          <Ionicons name="menu" size={24} color="#000" />
+        </TouchableOpacity>
+        <Text style={styles.title}>My Dear Diary</Text>
+        <TouchableOpacity 
+          style={styles.addButton} 
+          onPress={handleAddEntry}
+        >
+          <View style={styles.addButtonInner}>
+            <Ionicons name="add" size={24} color="#fff" />
+          </View>
+        </TouchableOpacity>
+      </View>
+
+      <CalendarHeader
+        selectedDate={selectedDate}
+        onDateSelect={setSelectedDate}
+      />
+
+      <FlatList
+        data={entries}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <DiaryCard
+            entry={item}
+            onEdit={() => handleEditEntry(item)}
+            onDelete={() => handleDeleteEntry(item)}
+          />
+        )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListEmptyComponent={() => (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="book-outline" size={48} color="#6B4EFF" style={styles.emptyIcon} />
+            <Text style={styles.emptyText}>
+              No entries for this day yet.{'\n'}
+              Tap + to add one.
+            </Text>
+          </View>
+        )}
+      />
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: '#f8f8f8',
+  },
+  menuButton: {
+    padding: 8,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  addButton: {
+    padding: 8,
+  },
+  addButtonInner: {
+    backgroundColor: '#6B4EFF',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#6B4EFF',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 40,
+  },
+  emptyIcon: {
+    marginBottom: 16,
+  },
+  emptyText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+});
+
+export default HomeScreen; 

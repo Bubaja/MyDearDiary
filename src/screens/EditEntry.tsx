@@ -1,0 +1,397 @@
+import React, { useState, useEffect, useLayoutEffect } from 'react';
+import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, ActivityIndicator, Text } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { RichEditor, RichToolbar, actions } from 'react-native-pell-rich-editor';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import { DiaryEntry } from '../types/diary';
+import { RootStackParamList } from '../navigation/types';
+import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import 'react-native-url-polyfill/auto';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type RouteProps = NativeStackScreenProps<RootStackParamList, 'EditEntry'>;
+
+const EditEntry = () => {
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [loading, setLoading] = useState(false);
+  const richText = React.useRef<RichEditor>(null);
+  const navigation = useNavigation<NavigationProp>();
+  const { params: { entry } } = useRoute<RouteProps['route']>();
+  const { session } = useAuth();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false
+    });
+  }, [navigation]);
+
+  useEffect(() => {
+    if (entry) {
+      setTitle(entry.title);
+      // Osiguravamo da sadržaj počinje velikim slovom
+      const processedContent = entry.content
+        .replace(/<p>([a-z])/g, (match, firstChar) => `<p>${firstChar.toUpperCase()}`)
+        .replace(/^([a-z])/g, (match, firstChar) => firstChar.toUpperCase());
+      setContent(processedContent);
+    }
+  }, [entry]);
+
+  const handleImagePick = async () => {
+    Alert.alert(
+      'Add Image',
+      'Choose image source',
+      [
+        {
+          text: 'Camera',
+          onPress: handleCameraCapture,
+        },
+        {
+          text: 'Gallery',
+          onPress: handleGalleryPick,
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+      ],
+    );
+  };
+
+  const handleCameraCapture = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please grant camera permission to use this feature.');
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+      base64: true,
+      exif: false,
+    });
+
+    if (!result.canceled && result.assets[0].uri) {
+      await handleImageUpload(result.assets[0]);
+    }
+  };
+
+  const handleGalleryPick = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (status !== 'granted') {
+      Alert.alert('Permission needed', 'Please grant gallery permission to use this feature.');
+      return;
+    }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+      quality: 0.7,
+        base64: true,
+      exif: false,
+      });
+
+    if (!result.canceled && result.assets[0].uri) {
+      await handleImageUpload(result.assets[0]);
+    }
+  };
+
+  const handleImageUpload = async (asset: ImagePicker.ImagePickerAsset) => {
+    try {
+      const uri = asset.uri;
+      const filename = uri.split('/').pop();
+      const ext = uri.split('.').pop()?.toLowerCase() || 'jpg';
+      const filePath = `${session?.user.id}/${Date.now()}.${ext}`;
+
+      if (!['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
+        Alert.alert('Error', 'Unsupported image format. Please use JPG, PNG or GIF.');
+          return;
+        }
+
+      const formData = new FormData();
+      formData.append('file', {
+        uri: uri,
+        name: filename,
+        type: `image/${ext}`
+      } as any);
+
+      const { data, error } = await supabase.storage
+        .from('diary-images')
+        .upload(filePath, formData, {
+          contentType: `image/${ext}`,
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      const { data: urlData } = supabase.storage
+        .from('diary-images')
+          .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl;
+      
+      const imageHtml = `<img src="${publicUrl}" alt="diary image" style="width: 100%; height: auto; border-radius: 8px; margin: 8px 0;" />`;
+      richText.current?.insertHTML(imageHtml);
+      
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Image upload error:', errorMessage);
+      Alert.alert(
+        'Error',
+        'Failed to upload image. Please check your internet connection and try again.'
+      );
+    }
+  };
+
+  const handleContentChange = (text: string) => {
+    // Remove HTML tags temporarily for text processing
+    let processedContent = text
+      .replace(/<p><br><\/p>/g, '<p></p>')
+      // First, handle paragraph starts
+      .replace(/<p>([a-z])/g, (match, firstChar) => `<p>${firstChar.toUpperCase()}`)
+      // Handle first character in editor
+      .replace(/^([a-z])/g, (match, firstChar) => firstChar.toUpperCase());
+
+    // Handle sentence endings with better regex patterns
+    const sentenceEndRegexes = [
+      /\.(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g,  // Period followed by space or HTML
+      /\!(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g,  // Exclamation mark followed by space or HTML
+      /\?(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g   // Question mark followed by space or HTML
+    ];
+
+    sentenceEndRegexes.forEach(regex => {
+      processedContent = processedContent.replace(regex, (match, firstChar) => {
+        const punctuation = match[0]; // Get the punctuation mark
+        const separator = match.slice(1, match.length - 1); // Get the separator (space/HTML)
+        return `${punctuation}${separator}${firstChar.toUpperCase()}`;
+      });
+    });
+    
+    setContent(processedContent);
+  };
+
+  const handleSubmit = async () => {
+    try {
+      if (!session?.user) {
+        Alert.alert('Error', 'You must be logged in to save entries.');
+      return;
+    }
+
+      setLoading(true);
+      const cleanContent = content
+        .replace(/<div>/g, '<p>')
+        .replace(/<\/div>/g, '</p>')
+        .trim();
+
+      console.log('Attempting to update entry:', {
+        id: entry.id,
+        title,
+        contentLength: cleanContent.length
+      });
+
+      const { error } = await supabase
+        .from('entries')
+        .update({
+          title,
+          content: cleanContent,
+        })
+        .eq('id', entry.id);
+
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
+
+      console.log('Entry updated successfully');
+      // Sačekaj malo da se promene propagiraju
+      await new Promise(resolve => setTimeout(resolve, 300));
+      navigation.goBack();
+    } catch (error: any) {
+      console.error('Full error object:', error);
+      console.error('Error updating entry:', error.message || error);
+      Alert.alert('Error', `Failed to save changes: ${error.message || 'Unknown error'}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.headerButton}
+        >
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
+      <TextInput
+        value={title}
+        onChangeText={setTitle}
+          style={styles.titleInput}
+          placeholder="Entry Title"
+          placeholderTextColor="#999"
+        />
+        <TouchableOpacity 
+          onPress={handleSubmit}
+          style={[styles.headerButton, loading && styles.disabledButton]}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#000" />
+          ) : (
+            <Ionicons name="checkmark" size={24} color="#000" />
+          )}
+        </TouchableOpacity>
+      </View>
+      
+      <KeyboardAvoidingView 
+        style={styles.content} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={styles.editorContainer}>
+          <RichEditor
+            ref={richText}
+            initialContentHTML={content}
+            onChange={handleContentChange}
+            placeholder="My Dear Diary..."
+            style={styles.editor}
+            initialHeight={Dimensions.get('window').height - 300}
+            editorStyle={{
+              contentCSSText: `
+                * {
+                  font-family: -apple-system;
+                  font-size: 16px;
+                  line-height: 1.5;
+                }
+                body {
+                  margin: 0;
+                  padding: 0 16px;
+                }
+                p {
+                  margin: 0;
+                  padding: 0;
+                }
+                img {
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                  margin: 8px 0;
+                }
+              `
+            }}
+          />
+        </View>
+
+        <RichToolbar
+          editor={richText}
+          actions={[
+            actions.undo,  // Add undo action
+            actions.setBold,
+            actions.setItalic,
+            actions.setUnderline,
+            actions.alignLeft,
+            actions.alignCenter,
+            actions.alignRight,
+            actions.insertBulletsList,
+            actions.insertOrderedList,
+            actions.insertLink,
+            actions.insertImage,
+          ]}
+          style={styles.toolbar}
+          onPressAddImage={handleImagePick}
+        />
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f8f8',
+  },
+  content: {
+    flex: 1,
+    display: 'flex',
+  },
+  editorContainer: {
+    flex: 1,
+    marginHorizontal: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 12,
+    backgroundColor: '#fff',
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+  },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  headerButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  headerButtonDisabled: {
+    opacity: 0.5,
+  },
+  titleInput: {
+    flex: 1,
+    fontSize: 18,
+    marginHorizontal: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: '#f8f8f8',
+    borderRadius: 12,
+    color: '#333',
+    height: 44,
+  },
+  toolbar: {
+    backgroundColor: '#f8f8f8',
+    height: 44,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  editor: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  saveButtonText: {
+    color: '#000',
+    fontWeight: '600',
+  },
+});
+
+export default EditEntry; 
