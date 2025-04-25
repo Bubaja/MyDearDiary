@@ -274,17 +274,10 @@ export default function CreateEntry() {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <View style={styles.editorContainer}>
-<<<<<<< HEAD
-            <RichEditor
-              ref={richText}
-              initialContentHTML={content}
-            onChange={handleContentChange}
-=======
           <RichEditor
             ref={richText}
             initialContentHTML={content}
-            onChange={setContent}
->>>>>>> 746b980 (Poboljšan dizajn header-a na CreateEntry i EditEntry stranicama)
+            onChange={handleContentChange}
             placeholder="My Dear Diary..."
             style={styles.editor}
             initialHeight={Dimensions.get('window').height - 300}
@@ -298,36 +291,21 @@ export default function CreateEntry() {
                 body {
                   margin: 0;
                   padding: 0 16px;
-<<<<<<< HEAD
-                  }
-                  p {
-                    margin: 0;
-                    padding: 0;
-                  }
-=======
                 }
                 p {
                   margin: 0;
                   padding: 0;
                 }
->>>>>>> 746b980 (Poboljšan dizajn header-a na CreateEntry i EditEntry stranicama)
                 img {
                   max-width: 100%;
                   height: auto;
                   border-radius: 8px;
                   margin: 8px 0;
                 }
-<<<<<<< HEAD
-                `
-              }}
-            />
-          </View>
-=======
               `
             }}
           />
         </View>
->>>>>>> 746b980 (Poboljšan dizajn header-a na CreateEntry i EditEntry stranicama)
 
         <RichToolbar
           editor={richText}

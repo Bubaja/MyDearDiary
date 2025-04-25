@@ -3,7 +3,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 export type RootStackParamList = {
   Home: undefined;
-  CreateEntry: undefined;
+  CreateEntry: { entry?: DiaryEntry };
   EditEntry: { entry: DiaryEntry };
   Profile: undefined;
   MainStack: undefined;
