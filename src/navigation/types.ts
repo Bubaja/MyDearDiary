@@ -8,6 +8,7 @@ export type RootStackParamList = {
   Profile: undefined;
   MainStack: undefined;
   FAQ: undefined;
+  Legal: { documentType: 'privacy-policy' | 'terms-of-service' };
 };
 
 export type AuthStackParamList = {

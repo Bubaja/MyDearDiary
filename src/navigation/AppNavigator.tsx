@@ -11,6 +11,7 @@ import { useNavigation } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import FAQScreen from '../screens/FAQ';
+import LegalScreen from '../screens/LegalScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
@@ -68,6 +69,7 @@ const MainStack = () => {
       <Stack.Screen name="CreateEntry" component={CreateEntryWrapper} />
       <Stack.Screen name="EditEntry" component={EditEntry} />
       <Stack.Screen name="FAQ" component={FAQScreen} />
+      <Stack.Screen name="Legal" component={LegalScreen} />
     </Stack.Navigator>
   );
 };

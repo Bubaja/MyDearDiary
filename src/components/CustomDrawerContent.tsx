@@ -58,6 +58,26 @@ const CustomDrawerContent = (props: any) => {
           />
           <DrawerItem
             icon={({ color, size }) => (
+              <Ionicons name="shield-outline" color={color} size={size} />
+            )}
+            label="Privacy Policy"
+            onPress={() => props.navigation.navigate('MainStack', { 
+              screen: 'Legal',
+              params: { documentType: 'privacy-policy' }
+            })}
+          />
+          <DrawerItem
+            icon={({ color, size }) => (
+              <Ionicons name="document-text-outline" color={color} size={size} />
+            )}
+            label="Terms of Service"
+            onPress={() => props.navigation.navigate('MainStack', { 
+              screen: 'Legal',
+              params: { documentType: 'terms-of-service' }
+            })}
+          />
+          <DrawerItem
+            icon={({ color, size }) => (
               <Ionicons name="log-out-outline" color={color} size={size} />
             )}
             label="Sign Out"
