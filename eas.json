@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 5.9.1"
+    "version": ">= 5.9.1",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -26,10 +27,10 @@
   "submit": {
     "production": {
       "ios": {
-        "appleId": "your-apple-id@email.com",
-        "ascAppId": "your-app-store-connect-app-id",
-        "appleTeamId": "your-team-id"
+        "appleId": "mmilicevic1999@gmail.com",
+        "ascAppId": "6745125337",
+        "appleTeamId": "H7BD36AUHG"
       }
     }
   }
-} 
+}
