@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, Image, KeyboardAvoidingView, Platform, TextInput, InputAccessoryView, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, Image, KeyboardAvoidingView, Platform, TextInput, InputAccessoryView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { supabase } from '../lib/supabase';
 import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
@@ -30,7 +30,6 @@ export default function CreateEntry() {
   const { session } = useAuth();
   const route = useRoute<CreateEntryRouteProp>();
   const entry = route.params?.entry;
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -53,17 +52,6 @@ export default function CreateEntry() {
       header: () => null
     });
   }, [entry, navigation]);
-
-  useEffect(() => {
-    const onKeyboardShow = (e: any) => setKeyboardHeight(e.endCoordinates.height);
-    const onKeyboardHide = () => setKeyboardHeight(0);
-    const showSub = Keyboard.addListener('keyboardDidShow', onKeyboardShow);
-    const hideSub = Keyboard.addListener('keyboardDidHide', onKeyboardHide);
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
 
   const handleContentChange = (text: string) => {
     // Remove HTML tags temporarily for text processing
@@ -218,10 +206,10 @@ export default function CreateEntry() {
 
   const handleSubmit = async () => {
     try {
-    if (!session?.user) {
+      if (!session?.user) {
         Alert.alert('Error', 'You must be logged in to create entries.');
-      return;
-    }
+        return;
+      }
 
       console.log('Submitting entry with content:', content);
       console.log('Title:', title);
@@ -230,15 +218,15 @@ export default function CreateEntry() {
         .replace(/<div>/g, '<p>')
         .replace(/<\/div>/g, '</p>')
         .trim();
-      
+
       console.log('Cleaned content:', cleanContent);
 
       const { data, error } = await supabase
-          .from('entries')
-          .insert({
-            title,
-            content: cleanContent,
-            user_id: session.user.id,
+        .from('entries')
+        .insert({
+          title,
+          content: cleanContent,
+          user_id: session.user.id,
         })
         .select()
         .single();
@@ -280,72 +268,64 @@ export default function CreateEntry() {
         </TouchableOpacity>
       </View>
       
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 64 }} keyboardShouldPersistTaps="handled">
-        <KeyboardAvoidingView 
-          style={styles.content} 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-        >
-          <View style={styles.editorContainer}>
-            <RichEditor
-              ref={richText}
-              initialContentHTML={content}
-              onChange={handleContentChange}
-              placeholder="My Dear Diary..."
-              style={styles.editor}
-              initialHeight={Dimensions.get('window').height - 300}
-              editorStyle={{
-                contentCSSText: `
-                  * {
-                    font-family: -apple-system;
-                    font-size: 16px;
-                    line-height: 1.5;
-                  }
-                  body {
-                    margin: 0;
-                    padding: 0 16px;
-                  }
-                  p {
-                    margin: 0;
-                    padding: 0;
-                  }
-                  img {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 8px;
-                    margin: 8px 0;
-                  }
-                `
-              }}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </ScrollView>
-      <RichToolbar
-        editor={richText}
-        actions={[
-          actions.undo,
-          actions.setBold,
-          actions.setItalic,
-          actions.setUnderline,
-          actions.alignLeft,
-          actions.alignCenter,
-          actions.alignRight,
-          actions.insertBulletsList,
-          actions.insertOrderedList,
-          actions.insertLink,
-          actions.insertImage,
-        ]}
-        style={{
-          ...styles.toolbar,
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: keyboardHeight,
-          zIndex: 10,
-        }}
-        onPressAddImage={handleImagePick}
-      />
+      <KeyboardAvoidingView 
+        style={styles.content} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={styles.editorContainer}>
+          <RichEditor
+            ref={richText}
+            initialContentHTML={content}
+            onChange={handleContentChange}
+            placeholder="My Dear Diary..."
+            style={styles.editor}
+            initialHeight={Dimensions.get('window').height - 300}
+            editorStyle={{
+              contentCSSText: `
+                * {
+                  font-family: -apple-system;
+                  font-size: 16px;
+                  line-height: 1.5;
+                }
+                body {
+                  margin: 0;
+                  padding: 0 16px;
+                }
+                p {
+                  margin: 0;
+                  padding: 0;
+                }
+                img {
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                  margin: 8px 0;
+                }
+              `
+            }}
+          />
+        </View>
+
+        <RichToolbar
+          editor={richText}
+          actions={[
+            actions.undo,
+            actions.setBold,
+            actions.setItalic,
+            actions.setUnderline,
+            actions.alignLeft,
+            actions.alignCenter,
+            actions.alignRight,
+            actions.insertBulletsList,
+            actions.insertOrderedList,
+            actions.insertLink,
+            actions.insertImage,
+          ]}
+          style={styles.toolbar}
+          onPressAddImage={handleImagePick}
+        />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

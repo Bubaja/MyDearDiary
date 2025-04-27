@@ -2,7 +2,6 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SignIn from '../screens/SignIn';
 import SignUp from '../screens/SignUp';
-import ResetPassword from '../screens/ResetPasswordScreen';
 import { AuthStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -16,7 +15,6 @@ const AuthNavigator = () => {
     >
       <Stack.Screen name="Login" component={SignIn} />
       <Stack.Screen name="Register" component={SignUp} />
-      <Stack.Screen name="ResetPassword" component={ResetPassword} />
     </Stack.Navigator>
   );
 };

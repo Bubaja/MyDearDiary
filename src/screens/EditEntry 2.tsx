@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, ActivityIndicator, Text, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, ActivityIndicator, Text } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RichEditor, RichToolbar, actions } from 'react-native-pell-rich-editor';
 import { Ionicons } from '@expo/vector-icons';
@@ -23,7 +23,6 @@ const EditEntry = () => {
   const navigation = useNavigation<NavigationProp>();
   const { params: { entry } } = useRoute<RouteProps['route']>();
   const { session } = useAuth();
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -41,17 +40,6 @@ const EditEntry = () => {
       setContent(processedContent);
     }
   }, [entry]);
-
-  useEffect(() => {
-    const onKeyboardShow = (e: any) => setKeyboardHeight(e.endCoordinates.height);
-    const onKeyboardHide = () => setKeyboardHeight(0);
-    const showSub = Keyboard.addListener('keyboardDidShow', onKeyboardShow);
-    const hideSub = Keyboard.addListener('keyboardDidHide', onKeyboardHide);
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
 
   const handleImagePick = async () => {
     Alert.alert(
@@ -103,13 +91,13 @@ const EditEntry = () => {
       return;
     }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
       quality: 0.7,
-        base64: true,
+      base64: true,
       exif: false,
-      });
+    });
 
     if (!result.canceled && result.assets[0].uri) {
       await handleImageUpload(result.assets[0]);
@@ -125,8 +113,8 @@ const EditEntry = () => {
 
       if (!['jpg', 'jpeg', 'png', 'gif'].includes(ext)) {
         Alert.alert('Error', 'Unsupported image format. Please use JPG, PNG or GIF.');
-          return;
-        }
+        return;
+      }
 
       const formData = new FormData();
       formData.append('file', {
@@ -149,8 +137,8 @@ const EditEntry = () => {
 
       const { data: urlData } = supabase.storage
         .from('diary-images')
-          .getPublicUrl(filePath);
-
+        .getPublicUrl(filePath);
+        
       const publicUrl = urlData.publicUrl;
       
       const imageHtml = `<img src="${publicUrl}" alt="diary image" style="width: 100%; height: auto; border-radius: 8px; margin: 8px 0;" />`;
@@ -197,8 +185,8 @@ const EditEntry = () => {
     try {
       if (!session?.user) {
         Alert.alert('Error', 'You must be logged in to save entries.');
-      return;
-    }
+        return;
+      }
 
       setLoading(true);
       const cleanContent = content
@@ -224,7 +212,7 @@ const EditEntry = () => {
         console.error('Supabase update error:', error);
         throw error;
       }
-
+      
       console.log('Entry updated successfully');
       // Sačekaj malo da se promene propagiraju
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -247,9 +235,9 @@ const EditEntry = () => {
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-      <TextInput
-        value={title}
-        onChangeText={setTitle}
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
           style={styles.titleInput}
           placeholder="Entry Title"
           placeholderTextColor="#999"
@@ -267,72 +255,64 @@ const EditEntry = () => {
         </TouchableOpacity>
       </View>
       
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 64 }} keyboardShouldPersistTaps="handled">
-        <KeyboardAvoidingView 
-          style={styles.content} 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
-        >
-          <View style={styles.editorContainer}>
-            <RichEditor
-              ref={richText}
-              initialContentHTML={content}
-              onChange={handleContentChange}
-              placeholder="My Dear Diary..."
-              style={styles.editor}
-              initialHeight={Dimensions.get('window').height - 300}
-              editorStyle={{
-                contentCSSText: `
-                  * {
-                    font-family: -apple-system;
-                    font-size: 16px;
-                    line-height: 1.5;
-                  }
-                  body {
-                    margin: 0;
-                    padding: 0 16px;
-                  }
-                  p {
-                    margin: 0;
-                    padding: 0;
-                  }
-                  img {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 8px;
-                    margin: 8px 0;
-                  }
-                `
-              }}
-            />
-          </View>
-        </KeyboardAvoidingView>
-      </ScrollView>
-      <RichToolbar
-        editor={richText}
-        actions={[
-          actions.undo,
-          actions.setBold,
-          actions.setItalic,
-          actions.setUnderline,
-          actions.alignLeft,
-          actions.alignCenter,
-          actions.alignRight,
-          actions.insertBulletsList,
-          actions.insertOrderedList,
-          actions.insertLink,
-          actions.insertImage,
-        ]}
-        style={{
-          ...styles.toolbar,
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: keyboardHeight,
-          zIndex: 10,
-        }}
-        onPressAddImage={handleImagePick}
-      />
+      <KeyboardAvoidingView 
+        style={styles.content} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      >
+        <View style={styles.editorContainer}>
+          <RichEditor
+            ref={richText}
+            initialContentHTML={content}
+            onChange={handleContentChange}
+            placeholder="My Dear Diary..."
+            style={styles.editor}
+            initialHeight={Dimensions.get('window').height - 300}
+            editorStyle={{
+              contentCSSText: `
+                * {
+                  font-family: -apple-system;
+                  font-size: 16px;
+                  line-height: 1.5;
+                }
+                body {
+                  margin: 0;
+                  padding: 0 16px;
+                }
+                p {
+                  margin: 0;
+                  padding: 0;
+                }
+                img {
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                  margin: 8px 0;
+                }
+              `
+            }}
+          />
+        </View>
+
+        <RichToolbar
+          editor={richText}
+          actions={[
+            actions.undo,  // Add undo action
+            actions.setBold,
+            actions.setItalic,
+            actions.setUnderline,
+            actions.alignLeft,
+            actions.alignCenter,
+            actions.alignRight,
+            actions.insertBulletsList,
+            actions.insertOrderedList,
+            actions.insertLink,
+            actions.insertImage,
+          ]}
+          style={styles.toolbar}
+          onPressAddImage={handleImagePick}
+        />
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

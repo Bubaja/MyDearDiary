@@ -3,8 +3,7 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../navigation/types';
+import { RootStackNavigationProp } from '../navigation/types';
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -12,7 +11,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signIn } = useAuth();
-  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+  const navigation = useNavigation<RootStackNavigationProp>();
 
   const handleSignIn = async () => {
     try {
@@ -32,7 +31,7 @@ export default function SignIn() {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Welcome Back</Text> */}
+      <Text style={styles.title}>Welcome Back</Text>
       <Text style={styles.subtitle}>Sign in to continue</Text>
 
       <TextInput
@@ -75,7 +74,7 @@ export default function SignIn() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
           <Text style={styles.link}>Sign Up</Text>
         </TouchableOpacity>
       </View>
@@ -98,7 +97,6 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#666',
-    marginTop: 40,
     marginBottom: 20,
     textAlign: 'center',
   },
