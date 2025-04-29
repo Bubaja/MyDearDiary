@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { TextInput, Button, Text, Divider } from 'react-native-paper';
+import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../../navigation/AuthNavigator';
+import { AuthStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Login'>;
 
@@ -20,25 +20,28 @@ export const LoginScreen = ({ navigation }: Props) => {
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
   
-  const { signIn, signInWithGoogle, signInWithApple, signInWithFacebook } = useAuth();
+  const { signIn } = useAuth();
+  const signInWithGoogle = async () => { alert('Google sign in not implemented yet.'); };
+  const signInWithApple = async () => { alert('Apple sign in not implemented yet.'); };
+  const signInWithFacebook = async () => { alert('Facebook sign in not implemented yet.'); };
 
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
-      return 'Email je obavezan';
+      return 'Email is required';
     }
     if (!emailRegex.test(email)) {
-      return 'Unesite validnu email adresu';
+      return 'Please enter a valid email address';
     }
     return '';
   };
 
   const validatePassword = (password: string) => {
     if (!password) {
-      return 'Lozinka je obavezna';
+      return 'Password is required';
     }
     if (password.length < 6) {
-      return 'Lozinka mora imati najmanje 6 karaktera';
+      return 'Password must be at least 6 characters';
     }
     return '';
   };
@@ -73,7 +76,7 @@ export const LoginScreen = ({ navigation }: Props) => {
     try {
       await signIn(email, password);
     } catch (error) {
-      setError('Pogrešan email ili lozinka');
+      setError('Incorrect email or password');
     } finally {
       setLoading(false);
     }
@@ -96,7 +99,7 @@ export const LoginScreen = ({ navigation }: Props) => {
           break;
       }
     } catch (error) {
-      setError('Došlo je do greške prilikom prijave');
+      setError('An error occurred during sign in');
     } finally {
       setLoading(false);
     }
@@ -104,8 +107,8 @@ export const LoginScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Moj Dnevnik</Text>
-      <Text style={styles.subtitle}>Prijavite se da biste nastavili</Text>
+      <Text style={[styles.title, { marginTop: 80 }]}>Sign In</Text>
+      <Text style={[styles.subtitle, { marginTop: 24 }]}>Sign in to continue</Text>
       
       <TextInput
         label="Email"
@@ -116,19 +119,21 @@ export const LoginScreen = ({ navigation }: Props) => {
         style={styles.input}
         autoCapitalize="none"
         keyboardType="email-address"
+        placeholder="Email"
       />
       {touched.email && validationErrors.email && (
         <Text style={styles.errorText}>{validationErrors.email}</Text>
       )}
       
       <TextInput
-        label="Lozinka"
+        label="Password"
         value={password}
         onChangeText={setPassword}
         onBlur={() => handleBlur('password')}
         error={touched.password && !!validationErrors.password}
         style={styles.input}
         secureTextEntry
+        placeholder="Password"
       />
       {touched.password && validationErrors.password && (
         <Text style={styles.errorText}>{validationErrors.password}</Text>
@@ -142,10 +147,10 @@ export const LoginScreen = ({ navigation }: Props) => {
         loading={loading}
         style={styles.button}
       >
-        Prijavi se
+        Sign In
       </Button>
       
-      <Text style={styles.orText}>ili</Text>
+      <Text style={styles.orText}>or</Text>
       
       <Button
         mode="outlined"
@@ -153,7 +158,7 @@ export const LoginScreen = ({ navigation }: Props) => {
         style={styles.socialButton}
         icon="google"
       >
-        Prijavi se sa Google-om
+        Sign in with Google
       </Button>
       
       <Button
@@ -162,7 +167,7 @@ export const LoginScreen = ({ navigation }: Props) => {
         style={styles.socialButton}
         icon="apple"
       >
-        Prijavi se sa Apple-om
+        Sign in with Apple
       </Button>
       
       <Button
@@ -171,18 +176,16 @@ export const LoginScreen = ({ navigation }: Props) => {
         style={styles.socialButton}
         icon="facebook"
       >
-        Prijavi se sa Facebook-om
+        Sign in with Facebook
       </Button>
       
-      <Divider style={styles.divider} />
-      
       <Text style={styles.registerText}>
-        Nemate nalog?{' '}
+        Don't have an account?{' '}
         <Text
           style={styles.registerLink}
           onPress={() => navigation.navigate('Register')}
         >
-          Registrujte se
+          Sign Up
         </Text>
       </Text>
     </View>
@@ -220,9 +223,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 16,
     color: '#666',
-  },
-  divider: {
-    marginVertical: 24,
   },
   registerText: {
     textAlign: 'center',

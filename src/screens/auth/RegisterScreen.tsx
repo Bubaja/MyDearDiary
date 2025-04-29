@@ -3,7 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../../navigation/AuthNavigator';
+import { AuthStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Register'>;
 
@@ -27,30 +27,30 @@ export const RegisterScreen = ({ navigation }: Props) => {
   const validateEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
-      return 'Email je obavezan';
+      return 'Email is required';
     }
     if (!emailRegex.test(email)) {
-      return 'Unesite validnu email adresu';
+      return 'Please enter a valid email address';
     }
     return '';
   };
 
   const validatePassword = (password: string) => {
     if (!password) {
-      return 'Lozinka je obavezna';
+      return 'Password is required';
     }
     if (password.length < 6) {
-      return 'Lozinka mora imati najmanje 6 karaktera';
+      return 'Password must be at least 6 characters';
     }
     return '';
   };
 
   const validateConfirmPassword = (confirmPassword: string) => {
     if (!confirmPassword) {
-      return 'Potvrda lozinke je obavezna';
+      return 'Confirm password is required';
     }
     if (confirmPassword !== password) {
-      return 'Lozinke se ne poklapaju';
+      return 'Passwords do not match';
     }
     return '';
   };
@@ -89,7 +89,7 @@ export const RegisterScreen = ({ navigation }: Props) => {
       await signUp(email, password);
       navigation.navigate('Login');
     } catch (error) {
-      setError('Došlo je do greške prilikom registracije');
+      setError('An error occurred during registration');
     } finally {
       setLoading(false);
     }
@@ -97,8 +97,8 @@ export const RegisterScreen = ({ navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Registracija</Text>
-      <Text style={styles.subtitle}>Kreirajte svoj nalog</Text>
+      <Text style={[styles.title, { marginTop: 120 }]}>Sign Up</Text>
+      <Text style={[styles.subtitle, { marginTop: 80 }]}>Create your account</Text>
 
       <TextInput
         label="Email"
@@ -109,32 +109,35 @@ export const RegisterScreen = ({ navigation }: Props) => {
         style={styles.input}
         autoCapitalize="none"
         keyboardType="email-address"
+        placeholder="Email"
       />
       {touched.email && validationErrors.email && (
         <Text style={styles.errorText}>{validationErrors.email}</Text>
       )}
 
       <TextInput
-        label="Lozinka"
+        label="Password"
         value={password}
         onChangeText={setPassword}
         onBlur={() => handleBlur('password')}
         error={touched.password && !!validationErrors.password}
         style={styles.input}
         secureTextEntry
+        placeholder="Password"
       />
       {touched.password && validationErrors.password && (
         <Text style={styles.errorText}>{validationErrors.password}</Text>
       )}
 
       <TextInput
-        label="Potvrdite lozinku"
+        label="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         onBlur={() => handleBlur('confirmPassword')}
         error={touched.confirmPassword && !!validationErrors.confirmPassword}
         style={styles.input}
         secureTextEntry
+        placeholder="Confirm Password"
       />
       {touched.confirmPassword && validationErrors.confirmPassword && (
         <Text style={styles.errorText}>{validationErrors.confirmPassword}</Text>
@@ -148,16 +151,16 @@ export const RegisterScreen = ({ navigation }: Props) => {
         loading={loading}
         style={styles.button}
       >
-        Registrujte se
+        Sign Up
       </Button>
 
       <Text style={styles.loginText}>
-        Već imate nalog?{' '}
+        Already have an account?{' '}
         <Text
           style={styles.loginLink}
           onPress={() => navigation.navigate('Login')}
         >
-          Prijavite se
+          Sign In
         </Text>
       </Text>
     </View>

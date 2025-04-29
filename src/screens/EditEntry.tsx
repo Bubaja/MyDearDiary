@@ -11,6 +11,7 @@ import { RootStackParamList } from '../navigation/types';
 import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import 'react-native-url-polyfill/auto';
+import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProps = NativeStackScreenProps<RootStackParamList, 'EditEntry'>;
@@ -308,31 +309,26 @@ const EditEntry = () => {
           </View>
         </KeyboardAvoidingView>
       </ScrollView>
-      <RichToolbar
-        editor={richText}
-        actions={[
-          actions.undo,
-          actions.setBold,
-          actions.setItalic,
-          actions.setUnderline,
-          actions.alignLeft,
-          actions.alignCenter,
-          actions.alignRight,
-          actions.insertBulletsList,
-          actions.insertOrderedList,
-          actions.insertLink,
-          actions.insertImage,
-        ]}
-        style={{
-          ...styles.toolbar,
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: keyboardHeight,
-          zIndex: 10,
-        }}
-        onPressAddImage={handleImagePick}
-      />
+      <KeyboardAccessoryView alwaysVisible={true} androidAdjustResize>
+        <RichToolbar
+          editor={richText}
+          actions={[
+            actions.undo,
+            actions.setBold,
+            actions.setItalic,
+            actions.setUnderline,
+            actions.alignLeft,
+            actions.alignCenter,
+            actions.alignRight,
+            actions.insertBulletsList,
+            actions.insertOrderedList,
+            actions.insertLink,
+            actions.insertImage,
+          ]}
+          style={styles.toolbar}
+          onPressAddImage={handleImagePick}
+        />
+      </KeyboardAccessoryView>
     </SafeAreaView>
   );
 };

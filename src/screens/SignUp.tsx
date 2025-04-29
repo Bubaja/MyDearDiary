@@ -3,7 +3,8 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
-import { RootStackNavigationProp } from '../navigation/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../navigation/types';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -11,8 +12,9 @@ const SignUp = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const { signUp } = useAuth();
-  const navigation = useNavigation<RootStackNavigationProp>();
+  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
@@ -23,11 +25,15 @@ const SignUp = () => {
     try {
       setLoading(true);
       setError(null);
+      setSuccess(null);
       const { error } = await signUp(email, password);
       
       if (error) throw error;
       
-      navigation.navigate('SignIn');
+      setSuccess('Account created! Please check your email to verify your account, then sign in.');
+      setTimeout(() => {
+        navigation.navigate('Login');
+      }, 2000);
     } catch (error: any) {
       setError(error.message || 'An error occurred during sign up');
     } finally {
@@ -37,7 +43,7 @@ const SignUp = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+      {/* <Text style={styles.title}>Create Account</Text> */}
       <Text style={styles.subtitle}>Sign up to get started</Text>
 
       <TextInput
@@ -72,6 +78,10 @@ const SignUp = () => {
         <Text style={styles.errorText}>{error}</Text>
       )}
 
+      {success && (
+        <Text style={{ color: 'green', textAlign: 'center', marginBottom: 10 }}>{success}</Text>
+      )}
+
       <Button
         mode="contained"
         onPress={handleSignUp}
@@ -84,7 +94,7 @@ const SignUp = () => {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
           <Text style={styles.link}>Sign In</Text>
         </TouchableOpacity>
       </View>
@@ -98,15 +108,10 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
   subtitle: {
     fontSize: 16,
     color: '#666',
+    marginTop: 40,
     marginBottom: 20,
     textAlign: 'center',
   },

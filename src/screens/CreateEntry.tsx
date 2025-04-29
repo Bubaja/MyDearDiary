@@ -44,7 +44,7 @@ export default function CreateEntry() {
       setTitle(entry.title || '');
     } else {
       setTitle(format(new Date(), "EEEE, MMMM do, yyyy"));
-      setContent('<p>Dear diary...</p>');
+      setContent('<p>My Dear Diary...</p>');
     }
 
     // Ensure header is hidden
@@ -280,11 +280,15 @@ export default function CreateEntry() {
         </TouchableOpacity>
       </View>
       
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 64 }} keyboardShouldPersistTaps="handled">
+      <ScrollView 
+        contentContainerStyle={{ flexGrow: 1 }} 
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+      >
         <KeyboardAvoidingView 
           style={styles.content} 
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
         >
           <View style={styles.editorContainer}>
             <RichEditor
@@ -293,7 +297,11 @@ export default function CreateEntry() {
               onChange={handleContentChange}
               placeholder="My Dear Diary..."
               style={styles.editor}
-              initialHeight={Dimensions.get('window').height - 300}
+              initialHeight={Dimensions.get('window').height - 200}
+              useContainer={false}
+              editorInitializedCallback={() => {
+                console.log('Editor initialized');
+              }}
               editorStyle={{
                 contentCSSText: `
                   * {
@@ -304,6 +312,8 @@ export default function CreateEntry() {
                   body {
                     margin: 0;
                     padding: 0 16px;
+                    height: auto;
+                    min-height: 100%;
                   }
                   p {
                     margin: 0;
@@ -321,31 +331,26 @@ export default function CreateEntry() {
           </View>
         </KeyboardAvoidingView>
       </ScrollView>
-      <RichToolbar
-        editor={richText}
-        actions={[
-          actions.undo,
-          actions.setBold,
-          actions.setItalic,
-          actions.setUnderline,
-          actions.alignLeft,
-          actions.alignCenter,
-          actions.alignRight,
-          actions.insertBulletsList,
-          actions.insertOrderedList,
-          actions.insertLink,
-          actions.insertImage,
-        ]}
-        style={{
-          ...styles.toolbar,
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: keyboardHeight,
-          zIndex: 10,
-        }}
-        onPressAddImage={handleImagePick}
-      />
+      <KeyboardAccessoryView alwaysVisible={true} androidAdjustResize>
+        <RichToolbar
+          editor={richText}
+          actions={[
+            actions.undo,
+            actions.setBold,
+            actions.setItalic,
+            actions.setUnderline,
+            actions.alignLeft,
+            actions.alignCenter,
+            actions.alignRight,
+            actions.insertBulletsList,
+            actions.insertOrderedList,
+            actions.insertLink,
+            actions.insertImage,
+          ]}
+          style={styles.toolbar}
+          onPressAddImage={handleImagePick}
+        />
+      </KeyboardAccessoryView>
     </SafeAreaView>
   );
 }
@@ -409,13 +414,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    padding: 10,
+    marginBottom: Platform.OS === 'ios' ? 44 : 0,
   },
 }); 

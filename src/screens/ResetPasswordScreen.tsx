@@ -3,7 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
-import { RootStackNavigationProp } from '../navigation/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { AuthStackParamList } from '../navigation/types';
 
 const ResetPasswordScreen = () => {
   const [email, setEmail] = useState('');
@@ -11,7 +12,7 @@ const ResetPasswordScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const { resetPassword } = useAuth();
-  const navigation = useNavigation<RootStackNavigationProp>();
+  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
 
   const handleResetPassword = async () => {
     if (!email) {
@@ -36,10 +37,8 @@ const ResetPasswordScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Reset Password</Text>
-      <Text style={styles.subtitle}>
-        Enter your email address and we'll send you a link to reset your password.
-      </Text>
+      <Text style={[styles.title, { marginTop: 80 }]}>Reset Password</Text>
+      <Text style={[styles.subtitle, { marginTop: 24 }]}>Enter your email address and we'll send you a link to reset your password.</Text>
 
       <TextInput
         label="Email"
@@ -73,7 +72,7 @@ const ResetPasswordScreen = () => {
 
       <Button
         mode="text"
-        onPress={() => navigation.navigate('SignIn')}
+        onPress={() => navigation.navigate('Login')}
         style={styles.backButton}
       >
         Back to Sign In
