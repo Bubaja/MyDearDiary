@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, ActivityIndicator, Text, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, ActivityIndicator, Text, Keyboard, InputAccessoryView } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RichEditor, RichToolbar, actions } from 'react-native-pell-rich-editor';
 import { Ionicons } from '@expo/vector-icons';
@@ -35,11 +35,7 @@ const EditEntry = () => {
   useEffect(() => {
     if (entry) {
       setTitle(entry.title);
-      // Osiguravamo da sadržaj počinje velikim slovom
-      const processedContent = entry.content
-        .replace(/<p>([a-z])/g, (match, firstChar) => `<p>${firstChar.toUpperCase()}`)
-        .replace(/^([a-z])/g, (match, firstChar) => firstChar.toUpperCase());
-      setContent(processedContent);
+      setContent(entry.content);
     }
   }, [entry]);
 
@@ -168,30 +164,7 @@ const EditEntry = () => {
   };
 
   const handleContentChange = (text: string) => {
-    // Remove HTML tags temporarily for text processing
-    let processedContent = text
-      .replace(/<p><br><\/p>/g, '<p></p>')
-      // First, handle paragraph starts
-      .replace(/<p>([a-z])/g, (match, firstChar) => `<p>${firstChar.toUpperCase()}`)
-      // Handle first character in editor
-      .replace(/^([a-z])/g, (match, firstChar) => firstChar.toUpperCase());
-
-    // Handle sentence endings with better regex patterns
-    const sentenceEndRegexes = [
-      /\.(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g,  // Period followed by space or HTML
-      /\!(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g,  // Exclamation mark followed by space or HTML
-      /\?(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g   // Question mark followed by space or HTML
-    ];
-
-    sentenceEndRegexes.forEach(regex => {
-      processedContent = processedContent.replace(regex, (match, firstChar) => {
-        const punctuation = match[0]; // Get the punctuation mark
-        const separator = match.slice(1, match.length - 1); // Get the separator (space/HTML)
-        return `${punctuation}${separator}${firstChar.toUpperCase()}`;
-      });
-    });
-    
-    setContent(processedContent);
+    setContent(text);
   };
 
   const handleSubmit = async () => {
@@ -248,9 +221,9 @@ const EditEntry = () => {
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-      <TextInput
-        value={title}
-        onChangeText={setTitle}
+        <TextInput
+          value={title}
+          onChangeText={setTitle}
           style={styles.titleInput}
           placeholder="Entry Title"
           placeholderTextColor="#999"
@@ -267,12 +240,14 @@ const EditEntry = () => {
           )}
         </TouchableOpacity>
       </View>
-      
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingBottom: 64 }} keyboardShouldPersistTaps="handled">
-        <KeyboardAvoidingView 
-          style={styles.content} 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+      <KeyboardAvoidingView 
+        style={styles.content}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.editorContainer}>
             <RichEditor
@@ -281,7 +256,8 @@ const EditEntry = () => {
               onChange={handleContentChange}
               placeholder="My Dear Diary..."
               style={styles.editor}
-              initialHeight={Dimensions.get('window').height - 300}
+              initialHeight={Dimensions.get('window').height - 200}
+              useContainer={false}
               editorStyle={{
                 contentCSSText: `
                   * {
@@ -307,9 +283,15 @@ const EditEntry = () => {
               }}
             />
           </View>
-        </KeyboardAvoidingView>
-      </ScrollView>
-      <KeyboardAccessoryView alwaysVisible={true} androidAdjustResize>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <KeyboardAccessoryView 
+        alwaysVisible={true} 
+        androidAdjustResize 
+        hideBorder={true}
+        bumperHeight={0}
+        style={styles.keyboardAccessory}
+      >
         <RichToolbar
           editor={richText}
           actions={[
@@ -340,7 +322,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    display: 'flex',
   },
   editorContainer: {
     flex: 1,
@@ -383,23 +364,15 @@ const styles = StyleSheet.create({
     height: 44,
   },
   toolbar: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#ffffff',
     height: 44,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   editor: {
     flex: 1,
     backgroundColor: '#fff',
     borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
+    padding: 10,
+    marginBottom: Platform.OS === 'ios' ? 44 : 0,
   },
   disabledButton: {
     opacity: 0.5,
@@ -407,6 +380,17 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#000',
     fontWeight: '600',
+  },
+  keyboardAccessory: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
+  },
+  keyboardAccessoryInner: {
+    padding: 0,
+    margin: 0,
+    borderWidth: 0,
+    backgroundColor: '#f8f8f8',
   },
 });
 

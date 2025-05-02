@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, Image, KeyboardAvoidingView, Platform, TextInput, InputAccessoryView, Keyboard } from 'react-native';
 import { Text } from 'react-native-paper';
 import { supabase } from '../lib/supabase';
@@ -9,11 +9,12 @@ import { format } from 'date-fns';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { RichEditor, RichToolbar, actions } from 'react-native-pell-rich-editor';
-import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
 import { Image as ExpoImage } from 'expo-image';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import 'react-native-url-polyfill/auto';
+import { KeyboardAccessoryView } from 'react-native-keyboard-accessory';
+import { debounce } from 'lodash';
 
 type CreateEntryRouteProp = RouteProp<RootStackParamList, 'CreateEntry'>;
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -25,12 +26,14 @@ export default function CreateEntry() {
   const [content, setContent] = useState('');
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(false);
+  const [contentError, setContentError] = useState<string | null>(null);
   const richText = React.useRef<RichEditor>(null);
   const navigation = useNavigation<NavigationProp>();
   const { session } = useAuth();
   const route = useRoute<CreateEntryRouteProp>();
   const entry = route.params?.entry;
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -40,11 +43,26 @@ export default function CreateEntry() {
 
   useEffect(() => {
     if (entry) {
-      setContent(entry.content);
-      setTitle(entry.title || '');
+      try {
+        // Validate content length before setting
+        if (entry.content && entry.content.length > 50000) {
+          setContentError('Entry content is too long and might affect performance');
+          // Still load the content but show warning
+          setContent(entry.content);
+        } else {
+          setContentError(null);
+          setContent(entry.content || '');
+        }
+        setTitle(entry.title || '');
+      } catch (error) {
+        console.error('Error loading entry:', error);
+        Alert.alert('Error', 'Failed to load entry content');
+        navigation.goBack();
+      }
     } else {
       setTitle(format(new Date(), "EEEE, MMMM do, yyyy"));
       setContent('<p>My Dear Diary...</p>');
+      setContentError(null);
     }
 
     // Ensure header is hidden
@@ -65,31 +83,22 @@ export default function CreateEntry() {
     };
   }, []);
 
-  const handleContentChange = (text: string) => {
-    // Remove HTML tags temporarily for text processing
-    let processedContent = text
-      .replace(/<p><br><\/p>/g, '<p></p>')
-      // First, handle paragraph starts
-      .replace(/<p>([a-z])/g, (match, firstChar) => `<p>${firstChar.toUpperCase()}`)
-      // Handle first character in editor
-      .replace(/^([a-z])/g, (match, firstChar) => firstChar.toUpperCase());
-
-    // Handle sentence endings with better regex patterns
-    const sentenceEndRegexes = [
-      /\.(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g,  // Period followed by space or HTML
-      /\!(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g,  // Exclamation mark followed by space or HTML
-      /\?(?:\s|&nbsp;|\n|<\/p><p>)([a-z])/g   // Question mark followed by space or HTML
-    ];
-
-    sentenceEndRegexes.forEach(regex => {
-      processedContent = processedContent.replace(regex, (match, firstChar) => {
-        const punctuation = match[0]; // Get the punctuation mark
-        const separator = match.slice(1, match.length - 1); // Get the separator (space/HTML)
-        return `${punctuation}${separator}${firstChar.toUpperCase()}`;
-      });
+  useEffect(() => {
+    const keyboardWillShow = Keyboard.addListener('keyboardWillShow', () => {
+      setIsKeyboardVisible(true);
     });
-    
-    setContent(processedContent);
+    const keyboardWillHide = Keyboard.addListener('keyboardWillHide', () => {
+      setIsKeyboardVisible(false);
+    });
+
+    return () => {
+      keyboardWillShow.remove();
+      keyboardWillHide.remove();
+    };
+  }, []);
+
+  const handleContentChange = (text: string) => {
+    setContent(text);
   };
 
   const handleImagePick = async () => {
@@ -279,16 +288,19 @@ export default function CreateEntry() {
           <Ionicons name="checkmark" size={24} color="#000" />
         </TouchableOpacity>
       </View>
-      
-      <ScrollView 
-        contentContainerStyle={{ flexGrow: 1 }} 
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
+      {contentError && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{contentError}</Text>
+        </View>
+      )}
+      <KeyboardAvoidingView 
+        style={styles.content}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
       >
-        <KeyboardAvoidingView 
-          style={styles.content} 
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          keyboardVerticalOffset={Platform.OS === 'ios' ? 88 : 0}
+        <ScrollView 
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
         >
           <View style={styles.editorContainer}>
             <RichEditor
@@ -299,9 +311,6 @@ export default function CreateEntry() {
               style={styles.editor}
               initialHeight={Dimensions.get('window').height - 200}
               useContainer={false}
-              editorInitializedCallback={() => {
-                console.log('Editor initialized');
-              }}
               editorStyle={{
                 contentCSSText: `
                   * {
@@ -329,9 +338,15 @@ export default function CreateEntry() {
               }}
             />
           </View>
-        </KeyboardAvoidingView>
-      </ScrollView>
-      <KeyboardAccessoryView alwaysVisible={true} androidAdjustResize>
+        </ScrollView>
+      </KeyboardAvoidingView>
+      <KeyboardAccessoryView 
+        alwaysVisible={true} 
+        androidAdjustResize 
+        hideBorder={true}
+        bumperHeight={0}
+        style={styles.keyboardAccessory}
+      >
         <RichToolbar
           editor={richText}
           actions={[
@@ -362,7 +377,6 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    display: 'flex',
   },
   editorContainer: {
     flex: 1,
@@ -405,10 +419,8 @@ const styles = StyleSheet.create({
     height: 44,
   },
   toolbar: {
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#ffffff',
     height: 44,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   editor: {
     flex: 1,
@@ -416,5 +428,23 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 10,
     marginBottom: Platform.OS === 'ios' ? 44 : 0,
+  },
+  errorContainer: {
+    backgroundColor: '#fff3cd',
+    padding: 8,
+    marginHorizontal: 16,
+    marginTop: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#ffeeba',
+  },
+  errorText: {
+    color: '#856404',
+    fontSize: 14,
+  },
+  keyboardAccessory: {
+    backgroundColor: '#ffffff',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
   },
 }); 

@@ -14,8 +14,8 @@ export default function CalendarHeader({ onDateSelect, selectedDate }: Props) {
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
   const [startDate, setStartDate] = useState(subDays(new Date(), 3));
   
-  // Generate array of dates (3 days before, today, and 2 days after)
-  const dates = Array.from({ length: 6 }, (_, i) => addDays(startDate, i));
+  // Generate array of dates (5 dana)
+  const dates = Array.from({ length: 5 }, (_, i) => addDays(startDate, i));
 
   const handleDateSelect = (date: Date) => {
     setDatePickerVisible(false);
@@ -23,15 +23,15 @@ export default function CalendarHeader({ onDateSelect, selectedDate }: Props) {
   };
 
   const handlePrevious = () => {
-    const newStartDate = subDays(startDate, 6);
+    const newStartDate = subDays(startDate, 5);
     setStartDate(newStartDate);
-    onDateSelect(addDays(newStartDate, 3)); // Select middle date
+    onDateSelect(addDays(newStartDate, 2)); // Select middle date
   };
 
   const handleNext = () => {
-    const newStartDate = addDays(startDate, 6);
+    const newStartDate = addDays(startDate, 5);
     setStartDate(newStartDate);
-    onDateSelect(addDays(newStartDate, 3)); // Select middle date
+    onDateSelect(addDays(newStartDate, 2)); // Select middle date
   };
 
   const renderDate = (date: Date) => {
@@ -78,13 +78,9 @@ export default function CalendarHeader({ onDateSelect, selectedDate }: Props) {
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
+        <View style={styles.datesRow}>
           {dates.map(renderDate)}
-        </ScrollView>
+        </View>
 
         <View style={styles.rightButtons}>
           <TouchableOpacity
@@ -175,5 +171,11 @@ const styles = StyleSheet.create({
   calendarButton: {
     padding: 8,
     marginLeft: 8,
+  },
+  datesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
   },
 }); 
