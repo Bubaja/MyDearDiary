@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, Image, KeyboardAvoidingView, Platform, TextInput, InputAccessoryView, Keyboard } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, Image, KeyboardAvoidingView, Platform, TextInput, InputAccessoryView, Keyboard, ActivityIndicator } from 'react-native';
 import { Text } from 'react-native-paper';
 import { supabase } from '../lib/supabase';
 import { useNavigation, useRoute, RouteProp, CommonActions } from '@react-navigation/native';
@@ -283,9 +283,14 @@ export default function CreateEntry() {
         />
         <TouchableOpacity 
           onPress={handleSubmit}
-          style={styles.headerButton}
+          style={[styles.headerButton, loading && styles.disabledButton]}
+          disabled={loading}
         >
-          <Ionicons name="checkmark" size={24} color="#000" />
+          {loading ? (
+            <ActivityIndicator size="small" color="#000" />
+          ) : (
+            <Ionicons name="checkmark" size={24} color="#000" />
+          )}
         </TouchableOpacity>
       </View>
       {contentError && (
@@ -404,7 +409,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#f5f5f5',
   },
-  headerButtonDisabled: {
+  disabledButton: {
     opacity: 0.5,
   },
   titleInput: {

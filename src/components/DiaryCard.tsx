@@ -28,7 +28,7 @@ export default function DiaryCard({ entry, onEdit, onDelete }: DiaryCardProps) {
   const baseStyle = {
     color: '#333',
     fontSize: 16,
-    lineHeight: 24,
+    lineHeight: 20,
     fontFamily: '-apple-system, Helvetica'
   };
 
@@ -42,7 +42,8 @@ export default function DiaryCard({ entry, onEdit, onDelete }: DiaryCardProps) {
     p: {
       margin: 0,
       padding: 0,
-      marginBottom: 8
+      marginBottom: 8,
+      lineHeight: 20
     }
   };
 
@@ -89,8 +90,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 16,
-    marginHorizontal: 16,
     marginBottom: 16,
+    marginHorizontal: 16,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -104,7 +105,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
   },
   title: {
     flex: 1,
