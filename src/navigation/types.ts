@@ -9,6 +9,9 @@ export type RootStackParamList = {
   MainStack: undefined;
   FAQ: undefined;
   Legal: { documentType: 'privacy-policy' | 'terms-of-service' };
+  Paywall: undefined;
+  Login: undefined;
+  Register: undefined;
 };
 
 export type AuthStackParamList = {

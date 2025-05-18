@@ -4,7 +4,10 @@ import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../navigation/types';
+import { RootStackParamList } from '../navigation/types';
+import { Ionicons } from '@expo/vector-icons';
+
+type SignInScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 export default function SignIn() {
   const [email, setEmail] = useState('');
@@ -12,7 +15,7 @@ export default function SignIn() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { signIn } = useAuth();
-  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+  const navigation = useNavigation<SignInScreenNavigationProp>();
 
   const handleSignIn = async () => {
     try {
@@ -22,7 +25,8 @@ export default function SignIn() {
       
       if (error) throw error;
       
-      // Navigation will happen automatically when session is set
+      // Navigate to Paywall after successful login
+      navigation.replace('Paywall');
     } catch (error: any) {
       setError(error.message || 'An error occurred during sign in');
     } finally {
@@ -32,52 +36,53 @@ export default function SignIn() {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Welcome Back</Text> */}
-      <Text style={styles.subtitle}>Sign in to continue</Text>
-
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        style={styles.input}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        mode="outlined"
-        style={styles.input}
-        secureTextEntry
-      />
-
-      <TouchableOpacity 
-        style={styles.forgotPassword}
-        onPress={() => navigation.navigate('ResetPassword')}
-      >
-        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-      </TouchableOpacity>
-
-      {error && (
-        <Text style={styles.errorText}>{error}</Text>
-      )}
-      <Button
-        mode="contained"
-        onPress={handleSignIn}
-        loading={loading}
-        disabled={loading || !email || !password}
-        style={styles.button}
-      >
-        Sign In
-      </Button>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-          <Text style={styles.link}>Sign Up</Text>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.closeButton}
+        >
+          <Ionicons name="close" size={24} color="#000" />
         </TouchableOpacity>
+        <Text style={styles.title}>Sign In</Text>
+        <View style={styles.placeholder} />
+      </View>
+
+      <View style={styles.content}>
+        <TextInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={styles.input}
+        />
+        
+        <TextInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+        
+        {error && <Text style={styles.error}>{error}</Text>}
+        
+        <Button
+          mode="contained"
+          onPress={handleSignIn}
+          loading={loading}
+          style={styles.button}
+        >
+          Sign In
+        </Button>
+        
+        <Button
+          mode="text"
+          onPress={() => navigation.navigate('Register')}
+          style={styles.link}
+        >
+          Don't have an account? Sign up
+        </Button>
       </View>
     </View>
   );
@@ -86,50 +91,42 @@ export default function SignIn() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 40,
-    marginBottom: 20,
-    textAlign: 'center',
+  closeButton: {
+    padding: 8,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  placeholder: {
+    width: 40,
+  },
+  content: {
+    padding: 16,
   },
   input: {
-    marginBottom: 15,
+    marginBottom: 16,
   },
   button: {
-    marginTop: 10,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  footerText: {
-    color: '#666',
+    marginTop: 8,
   },
   link: {
-    color: '#6B4EFF',
-    fontWeight: 'bold',
+    marginTop: 16,
   },
-  errorText: {
+  error: {
     color: 'red',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 15,
-  },
-  forgotPasswordText: {
-    color: '#6B4EFF',
+    marginBottom: 16,
   },
 }); 

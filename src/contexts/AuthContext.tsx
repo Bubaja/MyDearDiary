@@ -1,6 +1,10 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { Session } from '@supabase/supabase-js';
+import * as RNIap from 'react-native-iap';
+import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Alert } from 'react-native';
 
 type AuthContextType = {
   session: Session | null;
@@ -12,6 +16,10 @@ type AuthContextType = {
   navigateToSignIn?: () => void;
   resetPassword: (email: string) => Promise<{ data: any; error: any }>;
   updatePassword: (newPassword: string) => Promise<{ data: any; error: any }>;
+  isSubscribed: boolean | null;
+  subscriptionLoading: boolean;
+  checkSubscriptionStatus: () => Promise<void>;
+  deleteAccount: () => Promise<{ error: any }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +32,8 @@ type AuthProviderProps = {
 export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
   useEffect(() => {
     // Check for existing session
@@ -57,6 +67,7 @@ export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
       if (error) throw error;
       console.log('Sign in successful:', data.user);
       setSession(data.session);
+      await checkSubscriptionStatus();
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
@@ -127,9 +138,88 @@ export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
       
       if (error) throw error;
       console.log('Sign up successful:', data.user);
+      setSession(data.session);
+      await checkSubscriptionStatus();
       return { data, error: null };
     } catch (error) {
       return { data: null, error };
+    }
+  };
+
+  const checkSubscriptionStatus = async () => {
+    setSubscriptionLoading(true);
+    let timeoutId: NodeJS.Timeout | null = null;
+    try {
+      // Prvo proveri keširani status
+      const cached = await AsyncStorage.getItem('isSubscribed');
+      
+      if (cached !== null) {
+        setIsSubscribed(cached === 'true');
+      }
+      
+      const SUBSCRIPTION_ID = Platform.select({
+        ios: 'com.mydeardiary.monthly',
+        android: 'com.mydeardiary.monthly',
+      });
+      
+      // Timeout posle 7 sekundi
+      const timeoutPromise = new Promise((_, reject) =>
+        timeoutId = setTimeout(() => reject(new Error('Timeout')), 7000)
+      );
+      
+      const purchasesPromise = RNIap.getAvailablePurchases();
+      const purchases = await Promise.race([purchasesPromise, timeoutPromise]);
+      
+      // Proveri da li postoji aktivna pretplata
+      const hasActiveSub = (purchases as any[]).some(
+        (purchase) => purchase.productId === SUBSCRIPTION_ID
+      );
+
+      setIsSubscribed(hasActiveSub);
+      await AsyncStorage.setItem('isSubscribed', hasActiveSub ? 'true' : 'false');
+    } catch (err) {
+      // Ako istekne timeout ili dođe do greške, koristi keširani status
+      const cached = await AsyncStorage.getItem('isSubscribed');
+      setIsSubscribed(cached === 'true');
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
+      setSubscriptionLoading(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    try {
+      if (!session?.user) {
+        throw new Error('No user logged in');
+      }
+
+      // Prvo obriši sve podatke korisnika iz tvojih tabela
+      const { error: deleteError } = await supabase
+        .from('diary_entries')
+        .delete()
+        .eq('user_id', session.user.id);
+
+      if (deleteError) throw deleteError;
+
+      // Pozovi Edge Function za brisanje naloga
+      const { data, error } = await supabase.functions.invoke('delete-user', {
+        body: { user_id: session.user.id },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      console.log('Edge function response:', data, error);
+      if (error || data?.error) {
+        Alert.alert('Error', JSON.stringify(error || data?.error));
+        throw error || data.error;
+      }
+
+      // Odjavi korisnika
+      await signOut();
+      return { error: null };
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      return { error };
     }
   };
 
@@ -142,7 +232,11 @@ export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
       refreshSession,
       loading,
       resetPassword,
-      updatePassword
+      updatePassword,
+      isSubscribed,
+      subscriptionLoading,
+      checkSubscriptionStatus,
+      deleteAccount,
     }}>
       {children}
     </AuthContext.Provider>

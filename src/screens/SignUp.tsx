@@ -4,17 +4,19 @@ import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '../navigation/types';
+import { RootStackParamList } from '../navigation/types';
+import { Ionicons } from '@expo/vector-icons';
 
-const SignUp = () => {
+type SignUpScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Register'>;
+
+export default function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const { signUp } = useAuth();
-  const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
+  const navigation = useNavigation<SignUpScreenNavigationProp>();
 
   const handleSignUp = async () => {
     if (password !== confirmPassword) {
@@ -25,15 +27,12 @@ const SignUp = () => {
     try {
       setLoading(true);
       setError(null);
-      setSuccess(null);
       const { error } = await signUp(email, password);
       
       if (error) throw error;
       
-      setSuccess('Account created! Please check your email to verify your account, then sign in.');
-      setTimeout(() => {
-        navigation.navigate('Login');
-      }, 2000);
+      // Navigate to Paywall after successful registration
+      navigation.replace('Paywall');
     } catch (error: any) {
       setError(error.message || 'An error occurred during sign up');
     } finally {
@@ -43,101 +42,105 @@ const SignUp = () => {
 
   return (
     <View style={styles.container}>
-      {/* <Text style={styles.title}>Create Account</Text> */}
-      <Text style={styles.subtitle}>Sign up to get started</Text>
-
-      <TextInput
-        label="Email"
-        value={email}
-        onChangeText={setEmail}
-        mode="outlined"
-        style={styles.input}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-
-      <TextInput
-        label="Password"
-        value={password}
-        onChangeText={setPassword}
-        mode="outlined"
-        style={styles.input}
-        secureTextEntry
-      />
-
-      <TextInput
-        label="Confirm Password"
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-        mode="outlined"
-        style={styles.input}
-        secureTextEntry
-      />
-
-      {error && (
-        <Text style={styles.errorText}>{error}</Text>
-      )}
-
-      {success && (
-        <Text style={{ color: 'green', textAlign: 'center', marginBottom: 10 }}>{success}</Text>
-      )}
-
-      <Button
-        mode="contained"
-        onPress={handleSignUp}
-        loading={loading}
-        disabled={loading || !email || !password || !confirmPassword}
-        style={styles.button}
-      >
-        Sign Up
-      </Button>
-
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.link}>Sign In</Text>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()}
+          style={styles.closeButton}
+        >
+          <Ionicons name="close" size={24} color="#000" />
         </TouchableOpacity>
+        <Text style={styles.title}>Sign Up</Text>
+        <View style={styles.placeholder} />
+      </View>
+
+      <View style={styles.content}>
+        <TextInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          style={styles.input}
+        />
+        
+        <TextInput
+          label="Password"
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+
+        <TextInput
+          label="Confirm Password"
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+          style={styles.input}
+        />
+        
+        {error && <Text style={styles.error}>{error}</Text>}
+        
+        <Button
+          mode="contained"
+          onPress={handleSignUp}
+          loading={loading}
+          style={styles.button}
+        >
+          Sign Up
+        </Button>
+        
+        <Button
+          mode="text"
+          onPress={() => navigation.navigate('Login')}
+          style={styles.link}
+        >
+          Already have an account? Sign in
+        </Button>
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: '#fff',
   },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginTop: 40,
-    marginBottom: 20,
-    textAlign: 'center',
-  },
-  input: {
-    marginBottom: 15,
-  },
-  button: {
-    marginTop: 10,
-  },
-  footer: {
+  header: {
     flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  footerText: {
-    color: '#666',
+  closeButton: {
+    padding: 8,
   },
-  link: {
-    color: '#6B4EFF',
+  title: {
+    fontSize: 20,
     fontWeight: 'bold',
   },
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
-    textAlign: 'center',
+  placeholder: {
+    width: 40,
   },
-});
-
-export default SignUp; 
+  content: {
+    padding: 16,
+  },
+  input: {
+    marginBottom: 16,
+  },
+  button: {
+    marginTop: 8,
+  },
+  link: {
+    marginTop: 16,
+  },
+  error: {
+    color: 'red',
+    marginBottom: 16,
+  },
+}); 

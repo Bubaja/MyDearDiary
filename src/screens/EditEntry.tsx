@@ -221,9 +221,9 @@ const EditEntry = () => {
         >
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
-        <TextInput
-          value={title}
-          onChangeText={setTitle}
+      <TextInput
+        value={title}
+        onChangeText={setTitle}
           style={styles.titleInput}
           placeholder="Entry Title"
           placeholderTextColor="#999"
@@ -241,48 +241,48 @@ const EditEntry = () => {
         </TouchableOpacity>
       </View>
       <KeyboardAvoidingView 
-        style={styles.content}
+        style={styles.content} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
         <ScrollView 
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.editorContainer}>
-            <RichEditor
-              ref={richText}
-              initialContentHTML={content}
-              onChange={handleContentChange}
-              placeholder="My Dear Diary..."
-              style={styles.editor}
+      >
+        <View style={styles.editorContainer}>
+          <RichEditor
+            ref={richText}
+            initialContentHTML={content}
+            onChange={handleContentChange}
+            placeholder="My Dear Diary..."
+            style={styles.editor}
               initialHeight={Dimensions.get('window').height - 200}
               useContainer={false}
-              editorStyle={{
-                contentCSSText: `
-                  * {
-                    font-family: -apple-system;
-                    font-size: 16px;
-                    line-height: 1.5;
-                  }
-                  body {
-                    margin: 0;
-                    padding: 0 16px;
-                  }
-                  p {
-                    margin: 0;
-                    padding: 0;
-                  }
-                  img {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 8px;
-                    margin: 8px 0;
-                  }
-                `
-              }}
-            />
-          </View>
+            editorStyle={{
+              contentCSSText: `
+                * {
+                  font-family: -apple-system;
+                  font-size: 16px;
+                  line-height: 1.5;
+                }
+                body {
+                  margin: 0;
+                  padding: 0 16px;
+                }
+                p {
+                  margin: 0;
+                  padding: 0;
+                }
+                img {
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                  margin: 8px 0;
+                }
+              `
+            }}
+          />
+        </View>
         </ScrollView>
       </KeyboardAvoidingView>
       <KeyboardAccessoryView 

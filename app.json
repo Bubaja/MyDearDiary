@@ -18,9 +18,11 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.mydeardiary.app",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "We use your camera to let you add photos to your diary entries.",
+        "NSPhotoLibraryUsageDescription": "We use your photo library so you can attach images to your diary entries."
       },
-      "buildNumber": "30"
+      "buildNumber": "59"
     },
     "android": {
       "adaptiveIcon": {

@@ -5,12 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import DiaryCard from '../../components/DiaryCard';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNetwork } from '../../contexts/NetworkContext';
 import { RootStackParamList } from '../../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useFocusEffect, useNavigation, DrawerActions } from '@react-navigation/native';
 import { DiaryEntry } from '../../types/diary';
 import CalendarHeader from '../../components/CalendarHeader';
 import { startOfDay, endOfDay } from 'date-fns';
+import * as RNIap from 'react-native-iap';
+import NetworkStatus from '../../components/NetworkStatus';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -19,14 +22,33 @@ const HomeScreen: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const { session, signOut } = useAuth();
+  const { isConnected, isInternetReachable } = useNetwork();
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
+  const SUBSCRIPTION_ID = Platform.select({
+    ios: 'com.mydeardiary.monthly',
+    android: 'com.mydeardiary.monthly',
+  });
+
   const fetchEntries = async () => {
+    if (!session?.user?.id) {
+      setEntries([]);
+      return;
+    }
+
+    if (!isConnected || !isInternetReachable) {
+      Alert.alert(
+        'No Internet Connection',
+        'Please check your internet connection and try again.'
+      );
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('entries')
         .select('*')
-        .eq('user_id', session?.user?.id)
+        .eq('user_id', session.user.id)
         .gte('created_at', startOfDay(selectedDate).toISOString())
         .lte('created_at', endOfDay(selectedDate).toISOString())
         .order('created_at', { ascending: false });
@@ -35,6 +57,7 @@ const HomeScreen: React.FC = () => {
       setEntries(data || []);
     } catch (error) {
       console.error('Error fetching entries:', error);
+      Alert.alert('Error', 'Failed to fetch entries. Please try again.');
     }
   };
 
@@ -51,6 +74,19 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleAddEntry = async () => {
+    if (!isConnected || !isInternetReachable) {
+      Alert.alert(
+        'No Internet Connection',
+        'Please check your internet connection and try again.'
+      );
+      return;
+    }
+
+    if (!session?.user) {
+      navigation.navigate('Register');
+      return;
+    }
+
     try {
       const today = new Date();
       const startOfToday = startOfDay(today).toISOString();
@@ -59,21 +95,19 @@ const HomeScreen: React.FC = () => {
       const { data, error } = await supabase
         .from('entries')
         .select('*')
-        .eq('user_id', session?.user?.id)
+        .eq('user_id', session.user.id)
         .gte('created_at', startOfToday)
         .lte('created_at', endOfToday)
         .single();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 znači da nije pronađen unos
+      if (error && error.code !== 'PGRST116') {
         throw error;
       }
 
       if (data) {
-        // Ako postoji današnji unos, idemo na edit
         navigation.navigate('EditEntry', { entry: data });
       } else {
-        // Ako ne postoji današnji unos, idemo na create
-    navigation.navigate('CreateEntry');
+        navigation.navigate('CreateEntry', { entry: undefined });
       }
     } catch (error) {
       console.error('Error checking today\'s entry:', error);
@@ -86,6 +120,14 @@ const HomeScreen: React.FC = () => {
   };
 
   const handleDeleteEntry = async (entry: DiaryEntry) => {
+    if (!isConnected || !isInternetReachable) {
+      Alert.alert(
+        'No Internet Connection',
+        'Please check your internet connection and try again.'
+      );
+      return;
+    }
+
     Alert.alert(
       'Delete Entry',
       'Are you sure you want to delete this entry?',
@@ -115,6 +157,7 @@ const HomeScreen: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <NetworkStatus />
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.menuButton}
@@ -153,10 +196,16 @@ const HomeScreen: React.FC = () => {
         }
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
-            <Ionicons name="book-outline" size={48} color="#6B4EFF" style={styles.emptyIcon} />
+            <Ionicons 
+              name={session?.user ? "book-outline" : "log-in-outline"} 
+              size={48} 
+              color="#6B4EFF" 
+              style={styles.emptyIcon} 
+            />
             <Text style={styles.emptyText}>
-              No entries for this day yet.{'\n'}
-              Tap + to add one.
+              {session?.user 
+                ? "No entries for this day yet.\nTap + to add one."
+                : "Sign in to start writing your diary.\nTap + to get started."}
             </Text>
           </View>
         )}

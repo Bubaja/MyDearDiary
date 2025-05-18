@@ -12,6 +12,9 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import FAQScreen from '../screens/FAQ';
 import LegalScreen from '../screens/LegalScreen';
+import PaywallScreen from '../screens/PaywallScreen';
+import SignIn from '../screens/SignIn';
+import SignUp from '../screens/SignUp';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
@@ -61,6 +64,16 @@ const CreateEntryWrapper = () => {
 };
 
 const MainStack = () => {
+  const navigation = useNavigation<NavigationType>();
+  const { session, isSubscribed, subscriptionLoading } = useAuth();
+
+  useEffect(() => {
+    // Ako je korisnik prijavljen, ali nije pretplaćen, vodi ga na Paywall
+    if (session?.user && isSubscribed === false && !subscriptionLoading) {
+      navigation.navigate('Paywall');
+    }
+  }, [session, isSubscribed, subscriptionLoading, navigation]);
+
   return (
     <Stack.Navigator
       screenOptions={{
@@ -72,6 +85,13 @@ const MainStack = () => {
       <Stack.Screen name="EditEntry" component={EditEntry} />
       <Stack.Screen name="FAQ" component={FAQScreen} />
       <Stack.Screen name="Legal" component={LegalScreen} />
+      <Stack.Screen 
+        name="Paywall" 
+        component={PaywallScreen} 
+        options={{ gestureEnabled: false }} 
+      />
+      <Stack.Screen name="Login" component={SignIn} />
+      <Stack.Screen name="Register" component={SignUp} />
     </Stack.Navigator>
   );
 };

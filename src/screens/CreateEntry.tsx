@@ -48,12 +48,12 @@ export default function CreateEntry() {
         if (entry.content && entry.content.length > 50000) {
           setContentError('Entry content is too long and might affect performance');
           // Still load the content but show warning
-          setContent(entry.content);
+      setContent(entry.content);
         } else {
           setContentError(null);
           setContent(entry.content || '');
         }
-        setTitle(entry.title || '');
+      setTitle(entry.title || '');
       } catch (error) {
         console.error('Error loading entry:', error);
         Alert.alert('Error', 'Failed to load entry content');
@@ -96,7 +96,7 @@ export default function CreateEntry() {
       keyboardWillHide.remove();
     };
   }, []);
-
+    
   const handleContentChange = (text: string) => {
     setContent(text);
   };
@@ -289,7 +289,7 @@ export default function CreateEntry() {
           {loading ? (
             <ActivityIndicator size="small" color="#000" />
           ) : (
-            <Ionicons name="checkmark" size={24} color="#000" />
+          <Ionicons name="checkmark" size={24} color="#000" />
           )}
         </TouchableOpacity>
       </View>
@@ -299,50 +299,50 @@ export default function CreateEntry() {
         </View>
       )}
       <KeyboardAvoidingView 
-        style={styles.content}
+        style={styles.content} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
         <ScrollView 
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.editorContainer}>
-            <RichEditor
-              ref={richText}
-              initialContentHTML={content}
-              onChange={handleContentChange}
-              placeholder="My Dear Diary..."
-              style={styles.editor}
+      >
+        <View style={styles.editorContainer}>
+          <RichEditor
+            ref={richText}
+            initialContentHTML={content}
+            onChange={handleContentChange}
+            placeholder="My Dear Diary..."
+            style={styles.editor}
               initialHeight={Dimensions.get('window').height - 200}
               useContainer={false}
-              editorStyle={{
-                contentCSSText: `
-                  * {
-                    font-family: -apple-system;
-                    font-size: 16px;
-                    line-height: 1.5;
-                  }
-                  body {
-                    margin: 0;
-                    padding: 0 16px;
+            editorStyle={{
+              contentCSSText: `
+                * {
+                  font-family: -apple-system;
+                  font-size: 16px;
+                  line-height: 1.5;
+                }
+                body {
+                  margin: 0;
+                  padding: 0 16px;
                     height: auto;
                     min-height: 100%;
-                  }
-                  p {
-                    margin: 0;
-                    padding: 0;
-                  }
-                  img {
-                    max-width: 100%;
-                    height: auto;
-                    border-radius: 8px;
-                    margin: 8px 0;
-                  }
-                `
-              }}
-            />
-          </View>
+                }
+                p {
+                  margin: 0;
+                  padding: 0;
+                }
+                img {
+                  max-width: 100%;
+                  height: auto;
+                  border-radius: 8px;
+                  margin: 8px 0;
+                }
+              `
+            }}
+          />
+        </View>
         </ScrollView>
       </KeyboardAvoidingView>
       <KeyboardAccessoryView 
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
   errorText: {
     color: '#856404',
     fontSize: 14,
-  },
+    },
   keyboardAccessory: {
     backgroundColor: '#ffffff',
     borderTopWidth: 1,
