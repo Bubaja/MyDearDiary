@@ -1,0 +1,72 @@
+{
+  "app": {
+    "name": "My Dear Diary",
+    "subtitle": "Your Personal Digital Journal"
+  },
+  "auth": {
+    "login": "Log In",
+    "register": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "or": "or",
+    "loginWithGoogle": "Continue with Google",
+    "loginWithApple": "Continue with Apple",
+    "loginWithFacebook": "Continue with Facebook",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "signUp": "Sign Up",
+    "signIn": "Sign In"
+  },
+  "diary": {
+    "newEntry": "New Entry",
+    "editEntry": "Edit Entry",
+    "deleteEntry": "Delete Entry",
+    "deleteConfirm": "Are you sure you want to delete this entry?",
+    "deleteWarning": "This action cannot be undone.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "saved": "Saved",
+    "saving": "Saving...",
+    "title": "Title",
+    "content": "Write your thoughts...",
+    "date": "Date",
+    "addImage": "Add Image",
+    "removeImage": "Remove Image"
+  },
+  "settings": {
+    "title": "Settings",
+    "editProfile": "Edit Profile",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "security": "Security",
+    "language": "Language",
+    "theme": "Theme",
+    "about": "About",
+    "signOut": "Sign Out",
+    "biometric": {
+      "enable": "Enable Biometric Lock",
+      "disable": "Disable Biometric Lock",
+      "explanation": "Use Face ID/Touch ID to secure your diary"
+    }
+  },
+  "profile": {
+    "title": "Profile",
+    "changePhoto": "Change Photo",
+    "removePhoto": "Remove Photo",
+    "name": "Name",
+    "bio": "Bio",
+    "save": "Save Changes"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email",
+    "passwordLength": "Password must be at least 6 characters",
+    "passwordMatch": "Passwords do not match",
+    "loginFailed": "Invalid email or password",
+    "networkError": "Network error. Please try again.",
+    "unknown": "Something went wrong. Please try again."
+  }
+} 
