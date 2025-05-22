@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { TextInput, Button, Text } from 'react-native-paper';
 import { useAuth } from '../../contexts/AuthContext';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -150,6 +150,13 @@ export const LoginScreen = ({ navigation }: Props) => {
         Sign In
       </Button>
       
+      <TouchableOpacity 
+        style={styles.forgotPassword}
+        onPress={() => navigation.navigate('ResetPassword')}
+      >
+        <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+      </TouchableOpacity>
+      
       <Text style={styles.orText}>or</Text>
       
       <Button
@@ -235,5 +242,13 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     marginBottom: 8,
+  },
+  forgotPassword: {
+    alignSelf: 'center',
+    marginBottom: 15,
+    marginTop: 8,
+  },
+  forgotPasswordText: {
+    color: '#6B4EFF',
   },
 }); 

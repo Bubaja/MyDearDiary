@@ -25,8 +25,8 @@ export default function SignIn() {
       
       if (error) throw error;
       
-      // Navigate to Paywall after successful login
-      navigation.replace('Paywall');
+      // Navigate to Home after successful login
+      navigation.navigate('Home');
     } catch (error: any) {
       setError(error.message || 'An error occurred during sign in');
     } finally {
@@ -75,6 +75,13 @@ export default function SignIn() {
         >
           Sign In
         </Button>
+
+        <TouchableOpacity
+          style={styles.forgotPassword}
+          onPress={() => navigation.navigate('ResetPassword')}
+        >
+          <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
+        </TouchableOpacity>
         
         <Button
           mode="text"
@@ -128,5 +135,13 @@ const styles = StyleSheet.create({
   error: {
     color: 'red',
     marginBottom: 16,
+  },
+  forgotPassword: {
+    alignSelf: 'center',
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  forgotPasswordText: {
+    color: '#6B4EFF',
   },
 }); 

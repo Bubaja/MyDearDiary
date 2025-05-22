@@ -92,6 +92,7 @@ const MainStack = () => {
       />
       <Stack.Screen name="Login" component={SignIn} />
       <Stack.Screen name="Register" component={SignUp} />
+      <Stack.Screen name="ResetPassword" component={require('../screens/ResetPasswordScreen').default} />
     </Stack.Navigator>
   );
 };

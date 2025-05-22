@@ -12,6 +12,7 @@ export type RootStackParamList = {
   Paywall: undefined;
   Login: undefined;
   Register: undefined;
+  ResetPassword: undefined;
 };
 
 export type AuthStackParamList = {
