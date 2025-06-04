@@ -5,6 +5,8 @@ import * as RNIap from 'react-native-iap';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
+import { purchaseUpdatedListener, Purchase } from 'react-native-iap';
+import { EventEmitter } from 'events';
 
 type AuthContextType = {
   session: Session | null;
@@ -28,6 +30,9 @@ type AuthProviderProps = {
   children: React.ReactNode;
   onSignOut?: () => void;
 };
+
+// Globalni event emitter za navigaciju
+export const SubscriptionEventEmitter = new EventEmitter();
 
 export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null);
@@ -54,7 +59,32 @@ export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Globalni purchase listener
+    const purchaseUpdateSubscription = purchaseUpdatedListener(async (purchase: Purchase) => {
+      try {
+        // Opciono: validacija purchase.token ili receipt
+        await checkSubscriptionStatus();
+        // Ako je korisnik pretplaćen, emituje event za navigaciju
+        if (isSubscribed !== true) {
+          // Pozivamo proveru statusa, a navigaciju radimo nakon što se status ažurira
+          setTimeout(async () => {
+            const cached = await AsyncStorage.getItem('isSubscribed');
+            if (cached === 'true') {
+              SubscriptionEventEmitter.emit('subscriptionActive');
+            }
+          }, 1000);
+        }
+      } catch (err) {
+        console.error('Error in purchaseUpdatedListener:', err);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+      if (purchaseUpdateSubscription) {
+        purchaseUpdateSubscription.remove();
+      }
+    };
   }, [onSignOut]);
 
   const signIn = async (email: string, password: string) => {

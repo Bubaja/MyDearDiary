@@ -1,12 +1,11 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 import { format } from 'date-fns';
 import { MaterialIcons } from '@expo/vector-icons';
-import RenderHtml from 'react-native-render-html';
+import RenderHtml, { TDefaultRendererProps } from 'react-native-render-html';
 import { useWindowDimensions } from 'react-native';
 import { DiaryEntry } from '../types/diary';
-import { Image } from 'expo-image';
 
 interface DiaryCardProps {
   entry: DiaryEntry;
@@ -35,8 +34,8 @@ export default function DiaryCard({ entry, onEdit, onDelete }: DiaryCardProps) {
   const tagsStyles = {
     img: {
       width: '100%',
+      maxWidth: '100%',
       height: 'auto',
-      borderRadius: 8,
       marginVertical: 8,
     },
     p: {
@@ -47,11 +46,26 @@ export default function DiaryCard({ entry, onEdit, onDelete }: DiaryCardProps) {
     }
   };
 
-  // Extract image URLs from content
-  const imageUrls = entry.content.match(/<img[^>]+src="([^">]+)"/g)?.map(img => {
-    const match = img.match(/src="([^">]+)"/);
-    return match ? match[1] : null;
-  }).filter(Boolean) || [];
+  const renderers = {
+    img: ({ tnode }: any) => {
+      const src = tnode.attributes.src;
+      const alt = tnode.attributes.alt;
+      return (
+        <View style={{ overflow: 'hidden', borderRadius: 8, marginVertical: 8 }}>
+          <Image
+            source={{ uri: src }}
+            style={{
+              width: '100%',
+              height: width * 0.75,
+              borderRadius: 8,
+            }}
+            resizeMode="cover"
+            alt={alt}
+          />
+        </View>
+      );
+    },
+  };
 
   const viewProps = { style: {} };
   const textProps = { selectable: true };
@@ -63,10 +77,10 @@ export default function DiaryCard({ entry, onEdit, onDelete }: DiaryCardProps) {
         <Text variant="titleLarge" style={styles.title}>{entry.title}</Text>
         <View style={styles.actions}>
           <TouchableOpacity onPress={onEdit} style={styles.actionButton}>
-            <MaterialIcons name="edit" size={20} color="#666" />
+            <MaterialIcons name="edit" size={width * 0.05} color="#666" />
           </TouchableOpacity>
           <TouchableOpacity onPress={onDelete} style={styles.actionButton}>
-            <MaterialIcons name="delete" size={20} color="#ff4444" />
+            <MaterialIcons name="delete" size={width * 0.05} color="#ff4444" />
           </TouchableOpacity>
         </View>
       </View>
@@ -80,6 +94,7 @@ export default function DiaryCard({ entry, onEdit, onDelete }: DiaryCardProps) {
         defaultViewProps={viewProps}
         defaultTextProps={textProps}
         systemFonts={systemFonts}
+        renderers={renderers}
       />
     </View>
   );
@@ -89,9 +104,9 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    marginHorizontal: 16,
+    padding: '4%',
+    marginBottom: '4%',
+    marginHorizontal: '4%',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -105,7 +120,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: '2%',
   },
   title: {
     flex: 1,
@@ -116,7 +131,7 @@ const styles = StyleSheet.create({
   date: {
     fontSize: 14,
     color: '#999',
-    marginBottom: 8,
+    marginBottom: '2%',
   },
   contentText: {
     fontSize: 16,
@@ -128,7 +143,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButton: {
-    padding: 8,
-    marginLeft: 8,
+    padding: '2%',
+    marginLeft: '2%',
+  },
+  previewContainer: {
+    marginTop: '2%',
+    borderRadius: 8,
+    overflow: 'hidden',
   },
 }); 

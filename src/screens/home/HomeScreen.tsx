@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, RefreshControl, FlatList, TouchableOpacity, Alert, TouchableWithoutFeedback, Platform, SafeAreaView } from 'react-native';
+import { View, StyleSheet, RefreshControl, FlatList, TouchableOpacity, Alert, TouchableWithoutFeedback, Platform, SafeAreaView, useWindowDimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import DiaryCard from '../../components/DiaryCard';
@@ -18,6 +18,7 @@ import NetworkStatus from '../../components/NetworkStatus';
 type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const HomeScreen: React.FC = () => {
+  const { width, height } = useWindowDimensions();
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -158,20 +159,20 @@ const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <NetworkStatus />
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingHorizontal: width * 0.04, paddingVertical: height * 0.01 }]}>
         <TouchableOpacity 
           style={styles.menuButton}
           onPress={() => navigation.dispatch(DrawerActions.toggleDrawer())}
         >
-          <Ionicons name="menu" size={24} color="#000" />
+          <Ionicons name="menu" size={width * 0.07} color="#000" />
         </TouchableOpacity>
-        <Text style={styles.title}>My Dear Diary</Text>
+        <Text style={[styles.title, { fontSize: width * 0.055 }]}>My Dear Diary</Text>
         <TouchableOpacity 
           style={styles.addButton} 
           onPress={handleAddEntry}
         >
-          <View style={styles.addButtonInner}>
-            <Ionicons name="add" size={24} color="#fff" />
+          <View style={[styles.addButtonInner, { width: width * 0.09, height: width * 0.09, borderRadius: (width * 0.09) / 2 }]}>
+            <Ionicons name="add" size={width * 0.07} color="#fff" />
           </View>
         </TouchableOpacity>
       </View>
@@ -198,17 +199,18 @@ const HomeScreen: React.FC = () => {
           <View style={styles.emptyContainer}>
             <Ionicons 
               name={session?.user ? "book-outline" : "log-in-outline"} 
-              size={48} 
+              size={width * 0.12} 
               color="#6B4EFF" 
               style={styles.emptyIcon} 
             />
-            <Text style={styles.emptyText}>
+            <Text style={[styles.emptyText, { fontSize: width * 0.045 }]}>
               {session?.user 
                 ? "No entries for this day yet.\nTap + to add one."
                 : "Sign in to start writing your diary.\nTap + to get started."}
             </Text>
           </View>
         )}
+        contentContainerStyle={{ padding: width * 0.04 }}
       />
     </SafeAreaView>
   );
@@ -223,15 +225,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#f8f8f8',
   },
   menuButton: {
     padding: 8,
   },
   title: {
-    fontSize: 20,
     fontWeight: 'bold',
   },
   addButton: {
@@ -239,9 +237,6 @@ const styles = StyleSheet.create({
   },
   addButtonInner: {
     backgroundColor: '#6B4EFF',
-    width: 36,
-    height: 36,
-    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#6B4EFF',
@@ -263,7 +258,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyText: {
-    fontSize: 16,
     color: '#666',
     textAlign: 'center',
     lineHeight: 24,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Platform, useWindowDimensions } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -17,14 +17,15 @@ interface DrawerMenuProps {
 
 export default function DrawerMenu({ onClose, onNavigate }: DrawerMenuProps) {
   const { session } = useAuth();
+  const { width, height } = useWindowDimensions();
 
   const handleMenuItemPress = (screen: keyof RootStackParamList, params?: any) => {
     if (screen === 'Home') {
       onNavigate(screen);
       onClose();
-    } else if (screen === 'SignIn') {
+    } else if (screen === 'Login') {
       onNavigate(screen);
-      // Ne zatvaramo drawer za SignIn jer će to biti handled kroz auth context
+      // Ne zatvaramo drawer za Login jer će to biti handled kroz auth context
     } else {
       onNavigate(screen, params);
       onClose();
@@ -33,7 +34,7 @@ export default function DrawerMenu({ onClose, onNavigate }: DrawerMenuProps) {
 
   const menuItems = [
     { label: 'Home', icon: 'home-outline', screen: 'Home' as const },
-    { label: 'Help & FAQ', icon: 'help-circle-outline', screen: 'Help' as const },
+    { label: 'Help & FAQ', icon: 'help-circle-outline', screen: 'FAQ' as const },
     { label: 'Contact Support', icon: 'mail-outline', screen: 'Support' as const },
     { label: 'Rate App', icon: 'star-outline', screen: 'RateApp' as const },
     { 
@@ -48,34 +49,34 @@ export default function DrawerMenu({ onClose, onNavigate }: DrawerMenuProps) {
       screen: 'Legal' as const, 
       params: { documentType: 'terms-of-service' } 
     },
-    { label: 'Sign Out', icon: 'log-out-outline', screen: 'SignIn' as const },
+    { label: 'Sign Out', icon: 'log-out-outline', screen: 'Login' as const },
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { width: width * 0.8, paddingTop: Platform.OS === 'ios' ? height * 0.06 : 0 }]}> 
       <View style={styles.header}>
         <View style={styles.userInfo}>
           <View style={styles.avatarContainer}>
-            <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <MaterialIcons name="person" size={32} color="#444" />
+            <View style={[styles.avatar, styles.avatarPlaceholder, { width: width * 0.12, height: width * 0.12, borderRadius: (width * 0.12) / 2 }]}> 
+              <MaterialIcons name="person" size={width * 0.08} color="#444" />
             </View>
               </View>
           <View style={styles.userText}>
-            <Text variant="titleMedium" style={styles.userName}>
+            <Text variant="titleMedium" style={[styles.userName, { fontSize: width * 0.045 }]}>
               {session?.user?.user_metadata?.full_name || 'User'}
             </Text>
-            <Text variant="bodySmall" style={styles.userEmail}>
+            <Text variant="bodySmall" style={[styles.userEmail, { fontSize: width * 0.035 }]}>
               {session?.user?.email}
             </Text>
           </View>
         </View>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <MaterialIcons name="close" size={24} color="#666" />
+          <MaterialIcons name="close" size={width * 0.06} color="#666" />
         </TouchableOpacity>
       </View>
       <View style={styles.drawer}>
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Menu</Text>
+          <Text style={[styles.headerTitle, { fontSize: width * 0.06 }]}>Menu</Text>
         </View>
         <View style={styles.content}>
           {menuItems.map((item, index) => (
@@ -84,8 +85,8 @@ export default function DrawerMenu({ onClose, onNavigate }: DrawerMenuProps) {
             style={styles.menuItem} 
               onPress={() => handleMenuItemPress(item.screen, item.params)}
           >
-              <Ionicons name={item.icon as any} size={24} color="#333" />
-              <Text style={styles.menuItemText}>{item.label}</Text>
+              <Ionicons name={item.icon as any} size={width * 0.06} color="#333" />
+              <Text style={[styles.menuItemText, { fontSize: width * 0.045 }]}>{item.label}</Text>
           </TouchableOpacity>
           ))}
         </View>
@@ -97,12 +98,10 @@ export default function DrawerMenu({ onClose, onNavigate }: DrawerMenuProps) {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    width: '80%',
     height: '100%',
     position: 'absolute',
     top: 0,
     left: 0,
-    paddingTop: Platform.OS === 'ios' ? 47 : 0,
   },
   header: {
     flexDirection: 'row',
@@ -120,7 +119,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   headerTitle: {
-    fontSize: 24,
     fontWeight: 'bold',
   },
   content: {
@@ -136,7 +134,6 @@ const styles = StyleSheet.create({
   },
   menuItemText: {
     marginLeft: 16,
-    fontSize: 16,
     color: '#333',
   },
   userInfo: {
@@ -149,9 +146,6 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   avatar: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
     backgroundColor: '#f0f0f0',
     justifyContent: 'center',
     alignItems: 'center',

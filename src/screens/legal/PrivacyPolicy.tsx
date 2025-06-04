@@ -4,7 +4,10 @@ import { Text } from 'react-native-paper';
 
 export default function PrivacyPolicy() {
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
       <Text variant="headlineMedium" style={styles.title}>Privacy Policy</Text>
       
       <Text variant="bodyLarge" style={styles.section}>
@@ -49,6 +52,9 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: '#fff',
+  },
+  contentContainer: {
+    paddingBottom: 32,
   },
   title: {
     marginBottom: 16,

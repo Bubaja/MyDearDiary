@@ -6,13 +6,15 @@ export type RootStackParamList = {
   CreateEntry: { entry?: DiaryEntry };
   EditEntry: { entry: DiaryEntry };
   Profile: undefined;
-  MainStack: undefined;
+  MainStack: { screen?: keyof Omit<RootStackParamList, 'MainStack'> };
   FAQ: undefined;
   Legal: { documentType: 'privacy-policy' | 'terms-of-service' };
   Paywall: undefined;
   Login: undefined;
   Register: undefined;
   ResetPassword: undefined;
+  Support: undefined;
+  RateApp: undefined;
 };
 
 export type AuthStackParamList = {

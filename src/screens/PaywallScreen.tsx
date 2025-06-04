@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Linking, ActivityIndicator, Platform, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Linking, ActivityIndicator, Platform, Alert, useWindowDimensions } from 'react-native';
 import * as RNIap from 'react-native-iap';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../contexts/AuthContext';
+import { Ionicons } from '@expo/vector-icons';
 
 const SUBSCRIPTION_ID = Platform.select({
   ios: 'com.mydeardiary.monthly',
   android: 'com.mydeardiary.monthly',
 });
 
-export default function PaywallScreen() {
+const PaywallScreen = () => {
+  const { width, height } = useWindowDimensions();
   const [product, setProduct] = useState<RNIap.Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -72,11 +74,21 @@ export default function PaywallScreen() {
     if (product) {
       try {
         console.log('Attempting to request subscription...');
-        await RNIap.requestSubscription({ sku: product.productId });
+        const result = await RNIap.requestSubscription({ sku: product.productId });
+        console.log('Subscription request result:', result);
         console.log('Subscription request successful');
       } catch (err) {
         console.error('Subscription error:', err);
-        Alert.alert('Purchase failed', err instanceof Error ? err.message : String(err));
+        if (err instanceof Error) {
+          console.error('Error details:', {
+            name: err.name,
+            message: err.message,
+            stack: err.stack
+          });
+          Alert.alert('Purchase failed', err.message);
+        } else {
+          Alert.alert('Purchase failed', String(err));
+        }
       }
     } else {
       console.log('No product available');
@@ -130,16 +142,23 @@ export default function PaywallScreen() {
     return <ActivityIndicator size="large" style={{ flex: 1, justifyContent: 'center' }} />;
   }
 
-  if (isSubscribed) {
-    return null;
-  }
-
   return (
-    <View style={styles.background}>
-      <Text style={styles.appName}>My Dear Diary</Text>
-      <Image source={require('../../assets/paywall/woman.png')} style={styles.illustration} />
-      <Text style={styles.title}>This is your space</Text>
-      <Text style={styles.subtitle}>Unlock your dear diary today</Text>
+    <View style={[styles.background, { paddingHorizontal: width * 0.08, paddingBottom: height * 0.04 }]}>
+      <TouchableOpacity onPress={() => navigation.goBack()} style={{ position: 'absolute', top: height * 0.06, left: width * 0.04, zIndex: 10 }}>
+        <Ionicons name="arrow-back" size={width * 0.08} color="#333" />
+      </TouchableOpacity>
+      <Text style={[styles.appName, { fontSize: width * 0.09, marginTop: height * 0.08 }]}>My Dear Diary</Text>
+      <Image
+        source={require('../../assets/paywall/woman.png')}
+        style={{
+          width: width * 0.55,
+          height: height * 0.18,
+          resizeMode: 'contain',
+          marginBottom: height * 0.01
+        }}
+      />
+      <Text style={[styles.title, { fontSize: width * 0.07 }]}>Unlock Premium</Text>
+      <Text style={[styles.subtitle, { fontSize: width * 0.05 }]}>Get unlimited entries, cloud sync, and more!</Text>
       <View style={styles.benefits}>
         <View style={styles.benefitRow}>
           <Text style={styles.benefitIcon}>✔</Text>
@@ -156,70 +175,49 @@ export default function PaywallScreen() {
       </View>
       
       <View style={styles.priceContainer}>
-        <Text style={styles.price}>
-          {(product as any)?.priceString || '$2.99'}
-          <Text style={styles.pricePeriod}>/month</Text>
+        <Text style={[styles.price, { fontSize: width * 0.09 }]}>
+          $2.99
+          <Text style={[styles.pricePeriod, { fontSize: width * 0.06 }]}>/mo</Text>
         </Text>
-        <Text style={styles.trialText}>
-          Try free for 7 days
-        </Text>
-        <Text style={styles.trialInfo}>
-          After the 7-day free trial, you will be automatically charged {(product as any)?.priceString || '$2.99'}/month. 
-          Your subscription will automatically renew each month until you cancel it. 
-          You can cancel anytime through your App Store settings.
-        </Text>
+        <Text style={[styles.trialText, { fontSize: width * 0.045 }]}>7-day free trial</Text>
+        <Text style={[styles.trialInfo, { fontSize: width * 0.035, paddingHorizontal: width * 0.04 }]}>Cancel anytime. No hidden fees.</Text>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleSubscribe}>
-        <Text style={styles.buttonText}>Start Free Trial</Text>
+      <TouchableOpacity style={[styles.button, { paddingVertical: height * 0.022, paddingHorizontal: width * 0.12, width: width * 0.9 }]} onPress={handleSubscribe}>
+        <Text style={[styles.buttonText, { fontSize: width * 0.055 }]}>Start Free Trial</Text>
       </TouchableOpacity>
-      <Text style={styles.info}>Cancel anytime. No hidden fees.</Text>
-      <View style={styles.links}>
-        <Text style={styles.link} onPress={() => Linking.openURL('https://www.mydeardiary.com/terms.html')}>Terms of Service</Text>
-        <Text style={styles.link}> | </Text>
-        <Text style={styles.link} onPress={() => Linking.openURL('https://www.mydeardiary.com/privacy.html')}>Privacy Policy</Text>
-        <Text style={styles.link}> | </Text>
-        <Text style={styles.link} onPress={handleRestore}>Restore Purchases</Text>
+      <View style={[styles.links, { flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: width * 0.04 }]}> 
+        <Text style={[styles.link, { fontSize: width * 0.035 }]} onPress={() => Linking.openURL('https://www.mydeardiary.com/terms.html')}>Terms of Service</Text>
+        <Text style={[styles.link, { fontSize: width * 0.035 }]}> | </Text>
+        <Text style={[styles.link, { fontSize: width * 0.035 }]} onPress={() => Linking.openURL('https://www.mydeardiary.com/privacy.html')}>Privacy Policy</Text>
+        <Text style={[styles.link, { fontSize: width * 0.035 }]}> | </Text>
+        <Text style={[styles.link, { fontSize: width * 0.035 }]} onPress={handleRestore}>Restore Purchases</Text>
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   background: { 
     flex: 1, 
     width: '100%', 
-    height: '100%', 
     alignItems: 'center', 
     justifyContent: 'flex-start', 
-    paddingHorizontal: 32,
     backgroundColor: '#eadce3',
-    paddingBottom: 32,
   },
   appName: { 
-    fontSize: 40,
     fontWeight: 'bold', 
     color: '#2D2B37', 
     textAlign: 'center', 
-    marginTop: 64,
-    marginBottom: 8
-  },
-  illustration: { 
-    width: 220,
-    height: 160, 
-    resizeMode: 'contain', 
-    marginTop: 0,
     marginBottom: 8
   },
   title: { 
-    fontSize: 28,
     fontWeight: 'bold', 
     color: '#2D2B37', 
     textAlign: 'center', 
     marginBottom: 10
   },
   subtitle: { 
-    fontSize: 20,
     color: '#2D2B37', 
     textAlign: 'center', 
     marginBottom: 28
@@ -250,51 +248,36 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   price: {
-    fontSize: 38,
     fontWeight: 'bold',
     color: '#2D2B37',
     textAlign: 'center',
     marginBottom: 8,
   },
   pricePeriod: {
-    fontSize: 24,
     color: '#2D2B37',
     fontWeight: 'normal',
   },
   trialText: {
-    fontSize: 18,
     color: '#7C4DFF',
     marginTop: 8,
     marginBottom: 8,
   },
   trialInfo: {
-    fontSize: 14,
     color: '#6E6D7A',
     textAlign: 'center',
-    paddingHorizontal: 16,
     lineHeight: 20,
     marginBottom: 8,
   },
   button: {
     backgroundColor: '#FF6B4E',
     borderRadius: 32,
-    paddingVertical: 18,
-    paddingHorizontal: 48,
     marginBottom: 28,
     marginTop: 0,
-    width: '90%',
     alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
-    fontSize: 22,
     fontWeight: 'bold',
-  },
-  info: { 
-    fontSize: 15,
-    color: '#6E6D7A', 
-    marginBottom: 18,
-    textAlign: 'center' 
   },
   links: { 
     flexDirection: 'row', 
@@ -308,3 +291,5 @@ const styles = StyleSheet.create({
     fontSize: 16
   },
 }); 
+
+export default PaywallScreen; 

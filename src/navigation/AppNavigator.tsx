@@ -9,7 +9,7 @@ import CustomDrawerContent from '../components/CustomDrawerContent';
 import { RootStackParamList } from './types';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth, SubscriptionEventEmitter } from '../contexts/AuthContext';
 import FAQScreen from '../screens/FAQ';
 import LegalScreen from '../screens/LegalScreen';
 import PaywallScreen from '../screens/PaywallScreen';
@@ -70,9 +70,20 @@ const MainStack = () => {
   useEffect(() => {
     // Ako je korisnik prijavljen, ali nije pretplaćen, vodi ga na Paywall
     if (session?.user && isSubscribed === false && !subscriptionLoading) {
-      navigation.navigate('Paywall');
+      navigation.navigate('MainStack', { screen: 'Paywall' });
     }
   }, [session, isSubscribed, subscriptionLoading, navigation]);
+
+  useEffect(() => {
+    // Slušaj globalni event za aktivnu pretplatu
+    const handler = () => {
+      navigation.navigate('Home');
+    };
+    SubscriptionEventEmitter.on('subscriptionActive', handler);
+    return () => {
+      SubscriptionEventEmitter.off('subscriptionActive', handler);
+    };
+  }, [navigation]);
 
   return (
     <Stack.Navigator

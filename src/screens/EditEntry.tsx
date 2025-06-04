@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, ActivityIndicator, Text, Keyboard, InputAccessoryView } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Dimensions, TouchableOpacity, KeyboardAvoidingView, Platform, TextInput, ActivityIndicator, Text, Keyboard, InputAccessoryView, useWindowDimensions } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { RichEditor, RichToolbar, actions } from 'react-native-pell-rich-editor';
 import { Ionicons } from '@expo/vector-icons';
@@ -25,6 +25,7 @@ const EditEntry = () => {
   const { params: { entry } } = useRoute<RouteProps['route']>();
   const { session } = useAuth();
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const { height, width } = useWindowDimensions();
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -214,7 +215,7 @@ const EditEntry = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right']}>
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: Platform.OS === 'ios' ? height * 0.08 : 16 }]}>
         <TouchableOpacity 
           onPress={() => navigation.goBack()}
           style={styles.headerButton}
@@ -243,47 +244,48 @@ const EditEntry = () => {
       <KeyboardAvoidingView 
         style={styles.content} 
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={0}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
       >
         <ScrollView 
           contentContainerStyle={{ flexGrow: 1 }}
           keyboardShouldPersistTaps="handled"
-      >
-        <View style={styles.editorContainer}>
-          <RichEditor
-            ref={richText}
-            initialContentHTML={content}
-            onChange={handleContentChange}
-            placeholder="My Dear Diary..."
-            style={styles.editor}
-              initialHeight={Dimensions.get('window').height - 200}
-              useContainer={false}
-            editorStyle={{
-              contentCSSText: `
-                * {
-                  font-family: -apple-system;
-                  font-size: 16px;
-                  line-height: 1.5;
-                }
-                body {
-                  margin: 0;
-                  padding: 0 16px;
-                }
-                p {
-                  margin: 0;
-                  padding: 0;
-                }
-                img {
-                  max-width: 100%;
-                  height: auto;
-                  border-radius: 8px;
-                  margin: 8px 0;
-                }
-              `
-            }}
-          />
-        </View>
-        </ScrollView>
+        >
+          <View style={styles.editorContainer}>
+            <RichEditor
+              ref={richText}
+              initialContentHTML={content}
+              onChange={handleContentChange}
+              placeholder="My Dear Diary..."
+              style={styles.editor}
+              initialHeight={height * 0.7}
+              editorStyle={{
+                contentCSSText: `
+                  * {
+                    font-family: -apple-system;
+                    font-size: ${width * 0.04}px;
+                    line-height: 1.5;
+                  }
+                  body {
+                    margin: 0;
+                    padding: 0 ${width * 0.04}px;
+                    width: 100%;
+                    max-width: 100%;
+                  }
+                  p {
+                    margin: 0;
+                    padding: 0;
+                  }
+                  img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: ${width * 0.02}px;
+                    margin: ${width * 0.02}px 0;
+                  }
+                `
+              }}
+            />
+          </View>
+    </ScrollView>
       </KeyboardAvoidingView>
       <KeyboardAccessoryView 
         alwaysVisible={true} 
@@ -307,7 +309,11 @@ const EditEntry = () => {
             actions.insertLink,
             actions.insertImage,
           ]}
-          style={styles.toolbar}
+          style={{
+            backgroundColor: '#ffffff',
+            height: Math.max(44, height * 0.06),
+            paddingHorizontal: width * 0.02,
+          }}
           onPressAddImage={handleImagePick}
         />
       </KeyboardAccessoryView>
@@ -325,13 +331,12 @@ const styles = StyleSheet.create({
   },
   editorContainer: {
     flex: 1,
-    marginHorizontal: 16,
+    marginHorizontal: '4%',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 60,
+    paddingHorizontal: '4%',
     paddingBottom: 12,
     backgroundColor: '#fff',
     marginBottom: 8,
@@ -339,7 +344,7 @@ const styles = StyleSheet.create({
     shadowOffset: {
       width: 0,
       height: 2,
-    },
+  },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
@@ -361,11 +366,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f8f8',
     borderRadius: 12,
     color: '#333',
-    height: 44,
+    minHeight: 44,
   },
   toolbar: {
     backgroundColor: '#ffffff',
-    height: 44,
   },
   editor: {
     flex: 1,
