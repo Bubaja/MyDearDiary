@@ -147,7 +147,7 @@ const PaywallScreen = () => {
       <TouchableOpacity onPress={() => navigation.goBack()} style={{ position: 'absolute', top: height * 0.06, left: width * 0.04, zIndex: 10 }}>
         <Ionicons name="arrow-back" size={width * 0.08} color="#333" />
       </TouchableOpacity>
-      <Text style={[styles.appName, { fontSize: width * 0.09, marginTop: height * 0.08 }]}>My Dear Diary</Text>
+      <Text style={[styles.title, { fontSize: width * 0.09, marginTop: height * 0.08 }]}>My Dear Diary</Text>
       <Image
         source={require('../../assets/paywall/woman.png')}
         style={{
@@ -157,36 +157,34 @@ const PaywallScreen = () => {
           marginBottom: height * 0.01
         }}
       />
-      <Text style={[styles.title, { fontSize: width * 0.07 }]}>Unlock Premium</Text>
-      <Text style={[styles.subtitle, { fontSize: width * 0.05 }]}>Get unlimited entries, cloud sync, and more!</Text>
-      <View style={styles.benefits}>
+      <Text style={[styles.subtitle, { fontSize: width * 0.06, marginTop: height * 0.015, fontWeight: 'bold' }]}>This is your space</Text>
+      <Text style={[styles.description, { fontSize: width * 0.045, marginTop: height * 0.01, marginBottom: height * 0.02 }]}>Unlock your dear diary today</Text>
+      <View style={{ marginBottom: height * 0.02 }}>
         <View style={styles.benefitRow}>
-          <Text style={styles.benefitIcon}>✔</Text>
+          <Text style={styles.check}>✓</Text>
           <Text style={styles.benefit}>Unlimited journaling</Text>
         </View>
         <View style={styles.benefitRow}>
-          <Text style={styles.benefitIcon}>✔</Text>
+          <Text style={styles.check}>✓</Text>
           <Text style={styles.benefit}>Remember your moments</Text>
         </View>
         <View style={styles.benefitRow}>
-          <Text style={styles.benefitIcon}>✔</Text>
+          <Text style={styles.check}>✓</Text>
           <Text style={styles.benefit}>No ads. Total privacy!</Text>
         </View>
       </View>
       
-      <View style={styles.priceContainer}>
-        <Text style={[styles.price, { fontSize: width * 0.09 }]}>
-          $2.99
-          <Text style={[styles.pricePeriod, { fontSize: width * 0.06 }]}>/mo</Text>
-        </Text>
-        <Text style={[styles.trialText, { fontSize: width * 0.045 }]}>7-day free trial</Text>
+      <View style={[styles.priceContainer, { marginTop: 0, marginBottom: height * 0.01 }]}>
+        <Text style={[styles.price, { fontSize: width * 0.09 }]}>$2.99<Text style={[styles.pricePeriod, { fontSize: width * 0.06 }]}>/month</Text></Text>
+        <Text style={[styles.trialText, { fontSize: width * 0.045 }]}>Free for 7 days, then $2.99/month</Text>
+        <Text style={[styles.trialInfo, { fontSize: width * 0.035, paddingHorizontal: width * 0.04 }]}>Your subscription will automatically renew each month until you cancel it. You can cancel anytime through your App Store settings.</Text>
         <Text style={[styles.trialInfo, { fontSize: width * 0.035, paddingHorizontal: width * 0.04 }]}>Cancel anytime. No hidden fees.</Text>
       </View>
 
-      <TouchableOpacity style={[styles.button, { paddingVertical: height * 0.022, paddingHorizontal: width * 0.12, width: width * 0.9 }]} onPress={handleSubscribe}>
+      <TouchableOpacity style={[styles.button, { paddingVertical: height * 0.022, paddingHorizontal: width * 0.12, width: width * 0.9, marginBottom: height * 0.012, marginTop: height * 0.008 }]} onPress={handleSubscribe}>
         <Text style={[styles.buttonText, { fontSize: width * 0.055 }]}>Start Free Trial</Text>
       </TouchableOpacity>
-      <View style={[styles.links, { flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: width * 0.04 }]}> 
+      <View style={[styles.links, { flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: width * 0.04, marginTop: 0, marginBottom: height * 0.01 }]}> 
         <Text style={[styles.link, { fontSize: width * 0.035 }]} onPress={() => Linking.openURL('https://www.mydeardiary.com/terms.html')}>Terms of Service</Text>
         <Text style={[styles.link, { fontSize: width * 0.035 }]}> | </Text>
         <Text style={[styles.link, { fontSize: width * 0.035 }]} onPress={() => Linking.openURL('https://www.mydeardiary.com/privacy.html')}>Privacy Policy</Text>
@@ -289,6 +287,17 @@ const styles = StyleSheet.create({
     color: '#7C4DFF', 
     textDecorationLine: 'underline', 
     fontSize: 16
+  },
+  description: {
+    color: '#444',
+    textAlign: 'center',
+    fontWeight: '400',
+  },
+  check: {
+    fontSize: 22,
+    color: '#444',
+    marginRight: 10,
+    fontWeight: 'bold',
   },
 }); 
 
