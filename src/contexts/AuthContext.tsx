@@ -180,19 +180,28 @@ export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
     setSubscriptionLoading(true);
     let timeoutId: NodeJS.Timeout | null = null;
     try {
-      // Prvo proveri keširani status
-      const cached = await AsyncStorage.getItem('isSubscribed');
-      
-      if (cached !== null) {
-        setIsSubscribed(cached === 'true');
+      if (!session?.user?.id) {
+        setIsSubscribed(false);
+        return;
       }
-      
+
+      // Prvo proveri status u Supabase
+      const { data: subscriptionData, error: subscriptionError } = await supabase
+        .from('subscriptions')
+        .select('status')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (subscriptionError) {
+        console.error('Error checking subscription status:', subscriptionError);
+      }
+
+      // Proveri App Store/Play Store status
       const SUBSCRIPTION_ID = Platform.select({
         ios: 'com.mydeardiary.monthly',
         android: 'com.mydeardiary.monthly',
       });
       
-      // Timeout posle 7 sekundi
       const timeoutPromise = new Promise((_, reject) =>
         timeoutId = setTimeout(() => reject(new Error('Timeout')), 7000)
       );
@@ -200,15 +209,34 @@ export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
       const purchasesPromise = RNIap.getAvailablePurchases();
       const purchases = await Promise.race([purchasesPromise, timeoutPromise]);
       
-      // Proveri da li postoji aktivna pretplata
       const hasActiveSub = (purchases as any[]).some(
         (purchase) => purchase.productId === SUBSCRIPTION_ID
       );
 
+      // Ažuriraj status u Supabase ako je potrebno
+      if (hasActiveSub && (!subscriptionData || subscriptionData.status !== 'active')) {
+        await supabase
+          .from('subscriptions')
+          .upsert({
+            user_id: session.user.id,
+            status: 'active',
+            start_date: new Date().toISOString(),
+          });
+      } else if (!hasActiveSub && subscriptionData?.status === 'active') {
+        await supabase
+          .from('subscriptions')
+          .upsert({
+            user_id: session.user.id,
+            status: 'inactive',
+            end_date: new Date().toISOString(),
+          });
+      }
+
       setIsSubscribed(hasActiveSub);
       await AsyncStorage.setItem('isSubscribed', hasActiveSub ? 'true' : 'false');
     } catch (err) {
-      // Ako istekne timeout ili dođe do greške, koristi keširani status
+      console.error('Error in checkSubscriptionStatus:', err);
+      // Ako dođe do greške, koristi keširani status
       const cached = await AsyncStorage.getItem('isSubscribed');
       setIsSubscribed(cached === 'true');
     } finally {

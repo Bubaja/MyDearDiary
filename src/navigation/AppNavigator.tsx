@@ -15,6 +15,7 @@ import LegalScreen from '../screens/LegalScreen';
 import PaywallScreen from '../screens/PaywallScreen';
 import SignIn from '../screens/SignIn';
 import SignUp from '../screens/SignUp';
+import SubscriptionGate from '../components/SubscriptionGate';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator();
@@ -60,7 +61,11 @@ const CreateEntryWrapper = () => {
   }, [navigation, session]);
 
   // Renderujemo CreateEntry samo ako nema postojećeg unosa
-  return <CreateEntry />;
+  return (
+    <SubscriptionGate>
+      <CreateEntry />
+    </SubscriptionGate>
+  );
 };
 
 const MainStack = () => {
