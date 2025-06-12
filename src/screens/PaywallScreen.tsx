@@ -175,8 +175,10 @@ const PaywallScreen = () => {
       </View>
       
       <View style={[styles.priceContainer, { marginTop: 0, marginBottom: height * 0.01 }]}>
-        <Text style={[styles.price, { fontSize: width * 0.09 }]}>$2.99<Text style={[styles.pricePeriod, { fontSize: width * 0.06 }]}>/month</Text></Text>
-        <Text style={[styles.trialText, { fontSize: width * 0.045 }]}>Free for 7 days, then $2.99/month</Text>
+        <Text style={[styles.price, { fontSize: width * 0.11, color: '#7C4DFF', marginTop: height * 0.01 }]}>$2.99<Text style={{ fontSize: width * 0.07, color: '#7C4DFF' }}>/month</Text></Text>
+        <Text style={{ color: '#2D2B37', fontSize: width * 0.045, fontWeight: '500', textAlign: 'center', marginTop: 4 }}>
+          Free for 7 days, then $2.99/month - billed monthly
+        </Text>
         <Text style={[styles.trialInfo, { fontSize: width * 0.035, paddingHorizontal: width * 0.04 }]}>Your subscription will automatically renew each month until you cancel it. You can cancel anytime through your App Store settings.</Text>
         <Text style={[styles.trialInfo, { fontSize: width * 0.035, paddingHorizontal: width * 0.04 }]}>Cancel anytime. No hidden fees.</Text>
       </View>
