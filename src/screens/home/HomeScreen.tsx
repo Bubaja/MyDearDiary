@@ -19,6 +19,7 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const HomeScreen: React.FC = () => {
   const { width, height } = useWindowDimensions();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad;
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -196,14 +197,17 @@ const HomeScreen: React.FC = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={() => (
-          <View style={styles.emptyContainer}>
+          <View style={[styles.emptyContainer, isIPad && { paddingVertical: 80 }]}>
             <Ionicons 
               name={session?.user ? "book-outline" : "log-in-outline"} 
               size={width * 0.12} 
               color="#6B4EFF" 
               style={styles.emptyIcon} 
             />
-            <Text style={[styles.emptyText, { fontSize: width * 0.045 }]}>
+            <Text style={[
+              styles.emptyText,
+              { fontSize: isIPad ? 32 : width * 0.045, lineHeight: isIPad ? 40 : 24 },
+            ]}>
               {session?.user 
                 ? "No entries for this day yet.\nTap + to add one."
                 : "Sign in to start writing your diary.\nTap + to get started."}
