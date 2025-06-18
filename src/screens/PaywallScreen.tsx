@@ -13,6 +13,7 @@ const SUBSCRIPTION_ID = Platform.select({
 
 const PaywallScreen = () => {
   const { width, height } = useWindowDimensions();
+  const isIPad = Platform.OS === 'ios' && Platform.isPad;
   const [product, setProduct] = useState<RNIap.Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [isSubscribed, setIsSubscribed] = useState(false);
@@ -144,52 +145,69 @@ const PaywallScreen = () => {
 
   return (
     <View style={[styles.background, { paddingHorizontal: width * 0.08, paddingBottom: height * 0.04 }]}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={{ position: 'absolute', top: height * 0.06, left: width * 0.04, zIndex: 10 }}>
-        <Ionicons name="arrow-back" size={width * 0.08} color="#333" />
-      </TouchableOpacity>
-      <Text style={[styles.title, { fontSize: width * 0.09, marginTop: height * 0.08 }]}>My Dear Diary</Text>
+      {isIPad ? (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: height * 0.07, marginBottom: height * 0.01 }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 24 }}>
+            <Ionicons name="arrow-back" size={40} color="#333" />
+          </TouchableOpacity>
+          <Text style={{ fontSize: 44, fontWeight: 'bold', textAlign: 'center' }}>My Dear Diary</Text>
+        </View>
+      ) : (
+        <>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ position: 'absolute', top: height * 0.06, left: width * 0.04, zIndex: 10 }}>
+            <Ionicons name="arrow-back" size={width * 0.08} color="#333" />
+          </TouchableOpacity>
+          <Text style={[styles.title, { fontSize: width * 0.09, marginTop: height * 0.08 }]}>My Dear Diary</Text>
+        </>
+      )}
       <Image
         source={require('../../assets/paywall/woman.png')}
         style={{
-          width: width * 0.55,
-          height: height * 0.18,
+          width: isIPad ? width * 0.45 : width * 0.55,
+          height: isIPad ? height * 0.22 : height * 0.18,
           resizeMode: 'contain',
-          marginBottom: height * 0.01
+          marginBottom: isIPad ? height * 0.02 : height * 0.01
         }}
       />
-      <Text style={[styles.subtitle, { fontSize: width * 0.06, marginTop: height * 0.015, fontWeight: 'bold' }]}>This is your space</Text>
-      <Text style={[styles.description, { fontSize: width * 0.045, marginTop: height * 0.01, marginBottom: height * 0.02 }]}>Unlock your dear diary today</Text>
-      <View style={{ marginBottom: height * 0.02 }}>
+      <Text style={[
+        styles.subtitle,
+        { fontSize: isIPad ? 28 : width * 0.06, marginTop: isIPad ? height * 0.02 : height * 0.015, fontWeight: 'bold', lineHeight: isIPad ? 32 : undefined }
+      ]}>This is your space</Text>
+      <Text style={[
+        styles.description,
+        { fontSize: isIPad ? 20 : width * 0.045, marginTop: isIPad ? height * 0.01 : height * 0.01, marginBottom: isIPad ? height * 0.02 : height * 0.02, lineHeight: isIPad ? 26 : undefined }
+      ]}>Unlock your dear diary today</Text>
+      <View style={{ marginBottom: isIPad ? height * 0.02 : height * 0.02 }}>
         <View style={styles.benefitRow}>
-          <Text style={styles.check}>✓</Text>
-          <Text style={styles.benefit}>Unlimited journaling</Text>
+          <Text style={[styles.check, isIPad && { fontSize: 22 }]}>✓</Text>
+          <Text style={[styles.benefit, isIPad && { fontSize: 18, lineHeight: 24 }]}>Unlimited journaling</Text>
         </View>
         <View style={styles.benefitRow}>
-          <Text style={styles.check}>✓</Text>
-          <Text style={styles.benefit}>Remember your moments</Text>
+          <Text style={[styles.check, isIPad && { fontSize: 22 }]}>✓</Text>
+          <Text style={[styles.benefit, isIPad && { fontSize: 18, lineHeight: 24 }]}>Remember your moments</Text>
         </View>
         <View style={styles.benefitRow}>
-          <Text style={styles.check}>✓</Text>
-          <Text style={styles.benefit}>No ads. Total privacy!</Text>
+          <Text style={[styles.check, isIPad && { fontSize: 22 }]}>✓</Text>
+          <Text style={[styles.benefit, isIPad && { fontSize: 18, lineHeight: 24 }]}>No ads. Total privacy!</Text>
         </View>
       </View>
       
-      <View style={[styles.priceContainer, { marginTop: 0, marginBottom: height * 0.01 }]}>
-        <Text style={[styles.price, { fontSize: width * 0.09 }]}>$2.99<Text style={[styles.pricePeriod, { fontSize: width * 0.06 }]}>/month</Text></Text>
-        <Text style={[styles.trialText, { fontSize: width * 0.045 }]}>Free for 7 days, then $2.99/month</Text>
-        <Text style={[styles.trialInfo, { fontSize: width * 0.035, paddingHorizontal: width * 0.04 }]}>Your subscription will automatically renew each month until you cancel it. You can cancel anytime through your App Store settings.</Text>
-        <Text style={[styles.trialInfo, { fontSize: width * 0.035, paddingHorizontal: width * 0.04 }]}>Cancel anytime. No hidden fees.</Text>
+      <View style={[styles.priceContainer, { marginTop: 0, marginBottom: isIPad ? height * 0.015 : height * 0.01 }]}>
+        <Text style={[styles.price, { fontSize: isIPad ? 36 : width * 0.09, lineHeight: isIPad ? 40 : undefined }]}>$2.99<Text style={[styles.pricePeriod, { fontSize: isIPad ? 22 : width * 0.06 }]}>/month</Text></Text>
+        <Text style={[styles.trialText, { fontSize: isIPad ? 16 : width * 0.045, marginTop: isIPad ? 6 : 0, lineHeight: isIPad ? 20 : undefined }]}>Free for 7 days, then $2.99/month</Text>
+        <Text style={[styles.trialInfo, { fontSize: isIPad ? 14 : width * 0.035, paddingHorizontal: isIPad ? width * 0.12 : width * 0.04, lineHeight: isIPad ? 18 : undefined }]}>Your subscription will automatically renew each month until you cancel it. You can cancel anytime through your App Store settings.</Text>
+        <Text style={[styles.trialInfo, { fontSize: isIPad ? 14 : width * 0.035, paddingHorizontal: isIPad ? width * 0.12 : width * 0.04, lineHeight: isIPad ? 18 : undefined }]}>Cancel anytime. No hidden fees.</Text>
       </View>
 
-      <TouchableOpacity style={[styles.button, { paddingVertical: height * 0.022, paddingHorizontal: width * 0.12, width: width * 0.9, marginBottom: height * 0.012, marginTop: height * 0.008 }]} onPress={handleSubscribe}>
-        <Text style={[styles.buttonText, { fontSize: width * 0.055 }]}>Start Free Trial</Text>
+      <TouchableOpacity style={[styles.button, { paddingVertical: isIPad ? height * 0.025 : height * 0.022, paddingHorizontal: isIPad ? width * 0.18 : width * 0.12, width: isIPad ? width * 0.7 : width * 0.9, marginBottom: isIPad ? height * 0.02 : height * 0.012, marginTop: isIPad ? height * 0.01 : height * 0.008 }]} onPress={handleSubscribe}>
+        <Text style={[styles.buttonText, { fontSize: isIPad ? 24 : width * 0.055 }]}>Start Free Trial</Text>
       </TouchableOpacity>
-      <View style={[styles.links, { flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: width * 0.04, marginTop: 0, marginBottom: height * 0.01 }]}> 
-        <Text style={[styles.link, { fontSize: width * 0.035 }]} onPress={() => Linking.openURL('https://www.mydeardiary.com/terms.html')}>Terms of Service</Text>
-        <Text style={[styles.link, { fontSize: width * 0.035 }]}> | </Text>
-        <Text style={[styles.link, { fontSize: width * 0.035 }]} onPress={() => Linking.openURL('https://www.mydeardiary.com/privacy.html')}>Privacy Policy</Text>
-        <Text style={[styles.link, { fontSize: width * 0.035 }]}> | </Text>
-        <Text style={[styles.link, { fontSize: width * 0.035 }]} onPress={handleRestore}>Restore Purchases</Text>
+      <View style={[styles.links, { flexWrap: 'wrap', justifyContent: 'center', paddingHorizontal: isIPad ? width * 0.12 : width * 0.04, marginTop: 0, marginBottom: isIPad ? height * 0.01 : height * 0.01 }]}> 
+        <Text style={[styles.link, { fontSize: isIPad ? 14 : width * 0.035 }]} onPress={() => Linking.openURL('https://www.mydeardiary.com/terms.html')}>Terms of Service</Text>
+        <Text style={[styles.link, { fontSize: isIPad ? 14 : width * 0.035 }]}> | </Text>
+        <Text style={[styles.link, { fontSize: isIPad ? 14 : width * 0.035 }]} onPress={() => Linking.openURL('https://www.mydeardiary.com/privacy.html')}>Privacy Policy</Text>
+        <Text style={[styles.link, { fontSize: isIPad ? 14 : width * 0.035 }]}> | </Text>
+        <Text style={[styles.link, { fontSize: isIPad ? 14 : width * 0.035 }]} onPress={handleRestore}>Restore Purchases</Text>
       </View>
     </View>
   );
