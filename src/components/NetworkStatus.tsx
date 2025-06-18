@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNetwork } from '../contexts/NetworkContext';
@@ -6,8 +6,14 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function NetworkStatus() {
   const { isConnected, isInternetReachable } = useNetwork();
+  const [checked, setChecked] = useState(false);
 
-  if (isConnected && isInternetReachable) {
+  useEffect(() => {
+    // Kada se status prvi put proveri, postavi checked na true
+    setChecked(true);
+  }, [isConnected, isInternetReachable]);
+
+  if (!checked || (isConnected && isInternetReachable)) {
     return null;
   }
 

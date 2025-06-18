@@ -232,7 +232,13 @@ export function AuthProvider({ children, onSignOut }: AuthProviderProps) {
           });
       }
 
-      setIsSubscribed(hasActiveSub);
+      const isOnTrial = subscriptionData?.status === "trial";
+      const isActiveSubscription = subscriptionData?.status === "active";
+      
+      // Korisnik je pretplaćen ako ima aktivnu pretplatu ILI je na trial periodu
+      const isSubscribed = hasActiveSub || isOnTrial || isActiveSubscription;
+      
+      setIsSubscribed(isSubscribed);
       await AsyncStorage.setItem('isSubscribed', hasActiveSub ? 'true' : 'false');
     } catch (err) {
       console.error('Error in checkSubscriptionStatus:', err);

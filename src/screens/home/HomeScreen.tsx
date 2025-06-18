@@ -23,7 +23,7 @@ const HomeScreen: React.FC = () => {
   const [entries, setEntries] = useState<DiaryEntry[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const { session, signOut } = useAuth();
+  const { session, signOut, isSubscribed } = useAuth();
   const { isConnected, isInternetReachable } = useNetwork();
   const navigation = useNavigation<HomeScreenNavigationProp>();
 
@@ -86,6 +86,11 @@ const HomeScreen: React.FC = () => {
 
     if (!session?.user) {
       navigation.navigate('Register');
+      return;
+    }
+
+    if (isSubscribed === false) {
+      navigation.navigate('Paywall');
       return;
     }
 
