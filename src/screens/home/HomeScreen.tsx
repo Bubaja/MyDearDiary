@@ -89,11 +89,6 @@ const HomeScreen: React.FC = () => {
       return;
     }
 
-    if (isSubscribed === false) {
-      navigation.navigate('Paywall');
-      return;
-    }
-
     try {
       const today = new Date();
       const startOfToday = startOfDay(today).toISOString();

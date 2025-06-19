@@ -73,13 +73,6 @@ const MainStack = () => {
   const { session, isSubscribed, subscriptionLoading } = useAuth();
 
   useEffect(() => {
-    // Ako je korisnik prijavljen, ali nije pretplaćen, vodi ga na Paywall
-    if (session?.user && isSubscribed === false && !subscriptionLoading) {
-      navigation.navigate('MainStack', { screen: 'Paywall' });
-    }
-  }, [session, isSubscribed, subscriptionLoading, navigation]);
-
-  useEffect(() => {
     // Slušaj globalni event za aktivnu pretplatu
     const handler = () => {
       navigation.navigate('Home');

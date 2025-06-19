@@ -13,17 +13,6 @@ export default function SubscriptionGate({ children }: { children: React.ReactNo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (subscriptionLoading) return;
-    if (isSubscribed === false) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Paywall' as keyof RootStackParamList }],
-      });
-    }
-    // Ako je isSubscribed true, prikazuje children
-  }, [isSubscribed, subscriptionLoading, navigation]);
-
   if (subscriptionLoading || isSubscribed === null) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
